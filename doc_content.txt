@@ -1,0 +1,205 @@
+Yes. Since you want to genuinely support those resume bullets, you need to build the following components in IDMAP. You don't need to build a huge ChatGPT-like system; a focused RAG + LLM layer is enough.
+1. Core IDMAP ML pipeline
+These are the foundation:
+.h5 satellite-image loader
+Read images from HDF5 using h5py
+Inspect dimensions, labels, metadata
+Convert to NumPy/PyTorch tensors
+Image preprocessing
+Resize/normalize images
+Handle missing/corrupted samples
+Train/validation/test split
+Data augmentation if appropriate
+CNN models
+Train your smaller CNN models on image subsets
+Extract meaningful feature vectors from the CNN
+Save the trained models/features
+Feature/embedding generation
+Convert cyclone images/features into numerical embeddings
+Store the embeddings with their associated cyclone metadata
+
+2. RAG knowledge base
+This is the part you need to add to legitimately call it a RAG pipeline.
+Create a knowledge base containing things such as:
+Odisha cyclone history
+IMD cyclone terminology
+Cyclone intensity categories
+Wind-speed thresholds
+Rainfall information
+Landfall information
+Disaster-management guidelines
+Historical cyclone reports
+Odisha district information
+Emergency/resource-planning information
+For example:
+Cyclone → Fani
+Location → Odisha
+Year → 2019
+Maximum Wind Speed → ...
+Landfall → Odisha
+Affected Districts → ...
+You can also use official/public documents and reports as your textual knowledge base.
+
+3. Document processing pipeline
+Build a Python pipeline that:
+PDF/CSV/TXT/HTML documents↓Text extraction↓Cleaning↓Chunking↓Metadata assignment↓Embedding generation↓Vector database
+Each chunk should ideally have metadata such as:
+source
+document
+year
+cyclone
+location
+district
+topic
+This becomes important when you want the LLM to give traceable answers.
+
+4. Embedding + vector search
+You need an actual semantic retrieval component.
+For example:
+User Question
+      ↓
+Query Embedding
+      ↓
+Vector Database
+      ↓
+Top-k Relevant Chunks
+      ↓
+LLM
+You could use something like:
+Sentence Transformers for embeddings
+FAISS / Chroma / another vector store for retrieval
+The exact technology isn't as important as actually implementing embedding → indexing → similarity retrieval.
+
+5. Connect the CV model to RAG
+This is what makes your project more interesting than a generic RAG chatbot.
+Suppose your ML pipeline produces:
+Cyclone: X
+Current intensity: High
+Predicted intensity: Very High
+Anomaly score: 0.82
+Affected region: Coastal Odisha
+Convert these model outputs into structured context.
+Then your RAG system can retrieve relevant information about:
+What that intensity means
+Historical cyclones with similar characteristics
+Potential affected districts
+Relevant disaster-management guidelines
+So the architecture becomes:
+Satellite Image
+      ↓
+CNN
+      ↓
+Feature Extraction
+      ↓
+ML Models
+      ↓
+Cyclone Analysis
+      ↓
+┌───────────────────────────┐
+│ Structured Model Results  │
+│ Historical Knowledge      │
+│ Disaster Guidelines       │
+└─────────────┬─────────────┘
+              ↓
+         RAG Retrieval
+              ↓
+             LLM
+              ↓
+     Explanation / Advisory
+
+6. LLM layer
+The LLM should not make the cyclone prediction itself.
+Instead:
+ML models → provide predictions
+RAG → provides supporting knowledge
+LLM → explains the results
+For example:
+"The model predicts a high-risk situation for coastal Odisha. Similar historical events and the retrieved disaster-management guidelines indicate..."
+This is much more defensible academically.
+
+7. Prompt engineering
+Create structured prompts containing:
+SYSTEM ROLE
+You are a cyclone risk analysis assistant.
+
+MODEL OUTPUT
+Current risk: High
+Forecast: ...
+Anomaly score: ...
+
+RETRIEVED CONTEXT
+...
+
+TASK
+Explain the prediction.
+Identify relevant risks.
+Provide evidence-based advisory information.
+Do not invent information.
+You can create separate prompts for:
+Risk explanation
+Forecast explanation
+Historical comparison
+District-level advisory
+Resource planning
+What-if scenarios
+
+8. RAG response validation
+This is useful because you can demonstrate that your LLM isn't simply hallucinating.
+Check:
+Was the answer based on retrieved context?
+Were relevant documents retrieved?
+Are citations/source references available?
+Did the LLM introduce unsupported claims?
+You can measure things such as retrieval relevance and response quality.
+
+9. API layer
+Expose your pipeline through Flask/FastAPI:
+POST /predict
+POST /forecast
+POST /retrieve
+POST /advisory
+POST /chat
+Example:
+Image
+ ↓
+/predict
+ ↓
+ML prediction
+ ↓
+/advisory
+ ↓
+RAG retrieval
+ ↓
+LLM
+ ↓
+Final response
+
+10. Dashboard
+Your final UI could have:
+Cyclone Overview
+Current intensity
+Risk level
+Forecast
+AI Analysis
+Why the model predicted this
+SHAP explanation
+Anomaly detection
+Map
+Cyclone location
+Predicted propagation
+Potentially affected districts
+AI Advisory
+Ask questions about the cyclone
+Historical comparisons
+Retrieved sources
+Model-generated explanation
+
+What you actually need to finish for those 2 resume bullets
+You do not need all 10 components before the bullets are defensible.
+Minimum viable GenAI/RAG implementation
+Build these first:
+1. .h5 image → CNN → feature extraction↓2. Historical cyclone documents → chunking↓3. Embeddings → FAISS/Chroma↓4. Query → semantic retrieval↓5. ML prediction + retrieved context↓6. LLM → explanation/advisory↓7. Python API
+Once these work end-to-end, you can legitimately say you are:
+Developing a multimodal Generative AI and RAG pipeline using .h5 satellite image data, Computer Vision, embeddings, vector search, and LLMs.
+And your second bullet about Python preprocessing, prompt engineering, semantic retrieval, and LLM response generation will also be supported.
+The important distinction is that the CV/ML pipeline and RAG pipeline should be two connected layers, not that you need to somehow put the satellite images directly into a traditional text RAG database.

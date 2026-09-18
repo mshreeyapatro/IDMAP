@@ -1,0 +1,28 @@
+{
+  "r2_score": 0.9884888011371366,
+  "rmse": 0.015453748297609496,
+  "n_samples": 66,
+  "has_xgb": true,
+  "top_features": [
+    [
+      "coastal_distance_km",
+      0.6238831281661987
+    ],
+    [
+      "district_population",
+      0.09981375932693481
+    ],
+    [
+      "mean_anomaly_reconstruction_error",
+      0.09959156066179276
+    ],
+    [
+      "raw_tcir_vmax_proxy_kt_mean",
+      0.09937173873186111
+    ],
+    [
+      "infrared_tcir_vmax_proxy_kt_mean",
+      0.0773397907614708
+    ]
+  ]
+}

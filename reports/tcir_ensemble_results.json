@@ -1,0 +1,95 @@
+{
+  "n_models": 10,
+  "images_per_model": 1000,
+  "combiner_holdout": 2000,
+  "test_holdout": 2000,
+  "sub_model_results": [
+    {
+      "model_idx": 0,
+      "n_train": 900,
+      "val_mae_kt": 14.125574111938477,
+      "val_r2": 0.6410151720046997,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_00.pt",
+      "train_seconds": 100.0
+    },
+    {
+      "model_idx": 1,
+      "n_train": 900,
+      "val_mae_kt": 13.923888206481934,
+      "val_r2": 0.6019214391708374,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_01.pt",
+      "train_seconds": 118.1
+    },
+    {
+      "model_idx": 2,
+      "n_train": 900,
+      "val_mae_kt": 16.475297927856445,
+      "val_r2": 0.4827836751937866,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_02.pt",
+      "train_seconds": 94.4
+    },
+    {
+      "model_idx": 3,
+      "n_train": 900,
+      "val_mae_kt": 14.809728622436523,
+      "val_r2": 0.5239238142967224,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_03.pt",
+      "train_seconds": 94.1
+    },
+    {
+      "model_idx": 4,
+      "n_train": 900,
+      "val_mae_kt": 13.336742401123047,
+      "val_r2": 0.6319591403007507,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_04.pt",
+      "train_seconds": 180.8
+    },
+    {
+      "model_idx": 5,
+      "n_train": 900,
+      "val_mae_kt": 14.993024826049805,
+      "val_r2": 0.5025779008865356,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_05.pt",
+      "train_seconds": 165.4
+    },
+    {
+      "model_idx": 6,
+      "n_train": 900,
+      "val_mae_kt": 13.710498809814453,
+      "val_r2": 0.5307077169418335,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_06.pt",
+      "train_seconds": 155.0
+    },
+    {
+      "model_idx": 7,
+      "n_train": 900,
+      "val_mae_kt": 13.574880599975586,
+      "val_r2": 0.6341867446899414,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_07.pt",
+      "train_seconds": 227.8
+    },
+    {
+      "model_idx": 8,
+      "n_train": 900,
+      "val_mae_kt": 14.538124084472656,
+      "val_r2": 0.5363993644714355,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_08.pt",
+      "train_seconds": 107.4
+    },
+    {
+      "model_idx": 9,
+      "n_train": 900,
+      "val_mae_kt": 17.40445327758789,
+      "val_r2": 0.43262016773223877,
+      "ckpt": "C:\\Professional\\Projects\\IDMAP\\src\\cv_models\\checkpoints\\ensemble\\model_09.pt",
+      "train_seconds": 108.3
+    }
+  ],
+  "combiner_val_mae_kt": 11.920940399169922,
+  "combiner_val_r2": 0.6971545219421387,
+  "test_ensemble_mae_kt": 12.63062858581543,
+  "test_ensemble_r2": 0.6480090022087097,
+  "test_single_backbone_mae_kt": 11.16960620880127,
+  "test_single_backbone_r2": 0.7516171336174011,
+  "total_train_seconds": 1523.6
+}

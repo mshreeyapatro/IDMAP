@@ -1,0 +1,25 @@
+numpy
+pandas
+h5py
+pillow
+opencv-python
+torch
+torchvision
+xgboost
+scikit-learn
+shap
+tabulate
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pyshp
+shapely
+networkx
+imdtrack
+easyocr
+
+# optional: only needed if you set GEMINI_API_KEY (or GOOGLE_API_KEY) to
+# enable the real LLM tool-use loop in src/agent/agent.py (falls back to
+# rule-based routing without it)
+# google-genai
