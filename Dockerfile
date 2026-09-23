@@ -25,12 +25,15 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY prisma ./prisma
 RUN prisma generate --schema=./prisma/schema.prisma || true
 
-# Copy application source code
+# Copy application source code & processed datasets
 COPY backend ./backend
 COPY src ./src
 COPY docs ./docs
+COPY reports ./reports
+COPY data/processed ./data/processed
+COPY data/knowledge_base ./data/knowledge_base
 
-# Create directories for reports and models
+# Create directories for models
 RUN mkdir -p reports/retraining src/cv_models/checkpoints
 
 EXPOSE 8000

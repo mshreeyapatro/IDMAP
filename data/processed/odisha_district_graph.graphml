@@ -1,0 +1,397 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d4" for="edge" attr.name="centroid_distance_km" attr.type="double"/>
+<key id="d3" for="node" attr.name="coastal_distance_km" attr.type="double"/>
+<key id="d2" for="node" attr.name="centroid_lat" attr.type="double"/>
+<key id="d1" for="node" attr.name="centroid_lon" attr.type="double"/>
+<key id="d0" for="node" attr.name="censuscode" attr.type="long"/>
+<graph edgedefault="undirected"><node id="Anugul">
+  <data key="d0">384</data>
+  <data key="d1">84.90895938494553</data>
+  <data key="d2">20.986365582376045</data>
+  <data key="d3">111.11</data>
+</node>
+<node id="Balangir">
+  <data key="d0">393</data>
+  <data key="d1">83.17388259923901</data>
+  <data key="d2">20.59046225751014</data>
+  <data key="d3">176.34</data>
+</node>
+<node id="Baleshwar">
+  <data key="d0">377</data>
+  <data key="d1">86.91704457492527</data>
+  <data key="d2">21.489778625600717</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Bargarh">
+  <data key="d0">370</data>
+  <data key="d1">83.35344070751162</data>
+  <data key="d2">21.220224539187576</data>
+  <data key="d3">227.62</data>
+</node>
+<node id="Bauda">
+  <data key="d0">391</data>
+  <data key="d1">84.17764489604113</data>
+  <data key="d2">20.64681482151624</data>
+  <data key="d3">116.72</data>
+</node>
+<node id="Bhadrak">
+  <data key="d0">378</data>
+  <data key="d1">86.62540199665904</data>
+  <data key="d2">20.98585867846946</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Cuttack">
+  <data key="d0">381</data>
+  <data key="d1">85.70574451020704</data>
+  <data key="d2">20.449592919795762</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Debagarh">
+  <data key="d0">373</data>
+  <data key="d1">84.80371436170985</data>
+  <data key="d2">21.465935631719912</data>
+  <data key="d3">171.68</data>
+</node>
+<node id="Dhenkanal">
+  <data key="d0">383</data>
+  <data key="d1">85.52621281567576</data>
+  <data key="d2">20.826174810091906</data>
+  <data key="d3">76.54</data>
+</node>
+<node id="Gajapati">
+  <data key="d0">389</data>
+  <data key="d1">84.16068016201478</data>
+  <data key="d2">19.173382722402284</data>
+  <data key="d3">33.86</data>
+</node>
+<node id="Ganjam">
+  <data key="d0">388</data>
+  <data key="d1">84.67106828963922</data>
+  <data key="d2">19.62693314009622</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Jagatsinghapur">
+  <data key="d0">380</data>
+  <data key="d1">86.34365092840386</data>
+  <data key="d2">20.22182018417461</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Jajapur">
+  <data key="d0">382</data>
+  <data key="d1">86.15219727150107</data>
+  <data key="d2">20.85592847337729</data>
+  <data key="d3">20.01</data>
+</node>
+<node id="Jharsuguda">
+  <data key="d0">371</data>
+  <data key="d1">83.95473388562712</data>
+  <data key="d2">21.80598513059877</data>
+  <data key="d3">263.2</data>
+</node>
+<node id="Kalahandi">
+  <data key="d0">395</data>
+  <data key="d1">83.10923140338615</data>
+  <data key="d2">19.8676985661607</data>
+  <data key="d3">148.59</data>
+</node>
+<node id="Kandhamal">
+  <data key="d0">390</data>
+  <data key="d1">84.04724311559784</data>
+  <data key="d2">20.12889569220457</data>
+  <data key="d3">70.25</data>
+</node>
+<node id="Kendrapara">
+  <data key="d0">379</data>
+  <data key="d1">86.60969881801152</data>
+  <data key="d2">20.553126205859655</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Kendujhar">
+  <data key="d0">375</data>
+  <data key="d1">85.70507226192711</data>
+  <data key="d2">21.537081037349513</data>
+  <data key="d3">46.77</data>
+</node>
+<node id="Khordha">
+  <data key="d0">386</data>
+  <data key="d1">85.51141796982054</data>
+  <data key="d2">20.089962678450032</data>
+  <data key="d3">16.22</data>
+</node>
+<node id="Koraput">
+  <data key="d0">398</data>
+  <data key="d1">82.72126620845309</data>
+  <data key="d2">18.816545920652928</data>
+  <data key="d3">139.59</data>
+</node>
+<node id="Malkangiri">
+  <data key="d0">399</data>
+  <data key="d1">81.95633124759472</data>
+  <data key="d2">18.2580675075382</data>
+  <data key="d3">244.75</data>
+</node>
+<node id="Mayurbhanj">
+  <data key="d0">376</data>
+  <data key="d1">86.41117945877022</data>
+  <data key="d2">21.895171614578064</data>
+  <data key="d3">13.66</data>
+</node>
+<node id="Nabarangapur">
+  <data key="d0">397</data>
+  <data key="d1">82.33766375438289</data>
+  <data key="d2">19.58804209775802</data>
+  <data key="d3">195.4</data>
+</node>
+<node id="Nayagarh">
+  <data key="d0">385</data>
+  <data key="d1">84.99943793883894</data>
+  <data key="d2">20.21305724051623</data>
+  <data key="d3">30.16</data>
+</node>
+<node id="Nuapada">
+  <data key="d0">394</data>
+  <data key="d1">82.57831467260944</data>
+  <data key="d2">20.465662438646927</data>
+  <data key="d3">226.33</data>
+</node>
+<node id="Puri">
+  <data key="d0">387</data>
+  <data key="d1">85.72089420436416</data>
+  <data key="d2">19.876547774191714</data>
+  <data key="d3">0.0</data>
+</node>
+<node id="Rayagada">
+  <data key="d0">396</data>
+  <data key="d1">83.51384479948602</data>
+  <data key="d2">19.362277812352023</data>
+  <data key="d3">72.95</data>
+</node>
+<node id="Sambalpur">
+  <data key="d0">372</data>
+  <data key="d1">84.28093388546952</data>
+  <data key="d2">21.451911952156607</data>
+  <data key="d3">177.53</data>
+</node>
+<node id="Subarnapur">
+  <data key="d0">392</data>
+  <data key="d1">83.8248629734163</data>
+  <data key="d2">20.931535658986842</data>
+  <data key="d3">182.73</data>
+</node>
+<node id="Sundargarh">
+  <data key="d0">374</data>
+  <data key="d1">84.51057743486439</data>
+  <data key="d2">22.079776205646933</data>
+  <data key="d3">168.7</data>
+</node>
+<edge source="Anugul" target="Bauda">
+  <data key="d4">84.87</data>
+</edge>
+<edge source="Anugul" target="Cuttack">
+  <data key="d4">102.13</data>
+</edge>
+<edge source="Anugul" target="Debagarh">
+  <data key="d4">54.43</data>
+</edge>
+<edge source="Anugul" target="Dhenkanal">
+  <data key="d4">66.55</data>
+</edge>
+<edge source="Anugul" target="Kendujhar">
+  <data key="d4">102.74</data>
+</edge>
+<edge source="Anugul" target="Nayagarh">
+  <data key="d4">86.5</data>
+</edge>
+<edge source="Anugul" target="Sambalpur">
+  <data key="d4">83.17</data>
+</edge>
+<edge source="Anugul" target="Subarnapur">
+  <data key="d4">112.74</data>
+</edge>
+<edge source="Anugul" target="Sundargarh">
+  <data key="d4">128.37</data>
+</edge>
+<edge source="Balangir" target="Bargarh">
+  <data key="d4">72.47</data>
+</edge>
+<edge source="Balangir" target="Bauda">
+  <data key="d4">104.65</data>
+</edge>
+<edge source="Balangir" target="Kalahandi">
+  <data key="d4">80.65</data>
+</edge>
+<edge source="Balangir" target="Kandhamal">
+  <data key="d4">104.52</data>
+</edge>
+<edge source="Balangir" target="Nuapada">
+  <data key="d4">63.55</data>
+</edge>
+<edge source="Balangir" target="Subarnapur">
+  <data key="d4">77.59</data>
+</edge>
+<edge source="Baleshwar" target="Bhadrak">
+  <data key="d4">63.67</data>
+</edge>
+<edge source="Baleshwar" target="Kendrapara">
+  <data key="d4">108.93</data>
+</edge>
+<edge source="Baleshwar" target="Kendujhar">
+  <data key="d4">125.49</data>
+</edge>
+<edge source="Baleshwar" target="Mayurbhanj">
+  <data key="d4">69.02</data>
+</edge>
+<edge source="Bargarh" target="Jharsuguda">
+  <data key="d4">90.06</data>
+</edge>
+<edge source="Bargarh" target="Nuapada">
+  <data key="d4">116.31</data>
+</edge>
+<edge source="Bargarh" target="Sambalpur">
+  <data key="d4">99.46</data>
+</edge>
+<edge source="Bargarh" target="Subarnapur">
+  <data key="d4">58.51</data>
+</edge>
+<edge source="Bauda" target="Kandhamal">
+  <data key="d4">59.17</data>
+</edge>
+<edge source="Bauda" target="Nayagarh">
+  <data key="d4">98.28</data>
+</edge>
+<edge source="Bauda" target="Subarnapur">
+  <data key="d4">48.45</data>
+</edge>
+<edge source="Bhadrak" target="Jajapur">
+  <data key="d4">51.23</data>
+</edge>
+<edge source="Bhadrak" target="Kendrapara">
+  <data key="d4">48.15</data>
+</edge>
+<edge source="Bhadrak" target="Kendujhar">
+  <data key="d4">113.37</data>
+</edge>
+<edge source="Cuttack" target="Dhenkanal">
+  <data key="d4">45.85</data>
+</edge>
+<edge source="Cuttack" target="Jagatsinghapur">
+  <data key="d4">71.17</data>
+</edge>
+<edge source="Cuttack" target="Jajapur">
+  <data key="d4">64.8</data>
+</edge>
+<edge source="Cuttack" target="Kendrapara">
+  <data key="d4">94.85</data>
+</edge>
+<edge source="Cuttack" target="Khordha">
+  <data key="d4">44.83</data>
+</edge>
+<edge source="Cuttack" target="Nayagarh">
+  <data key="d4">78.2</data>
+</edge>
+<edge source="Cuttack" target="Puri">
+  <data key="d4">63.74</data>
+</edge>
+<edge source="Debagarh" target="Dhenkanal">
+  <data key="d4">103.32</data>
+</edge>
+<edge source="Debagarh" target="Sambalpur">
+  <data key="d4">54.12</data>
+</edge>
+<edge source="Debagarh" target="Sundargarh">
+  <data key="d4">74.67</data>
+</edge>
+<edge source="Dhenkanal" target="Jajapur">
+  <data key="d4">65.14</data>
+</edge>
+<edge source="Dhenkanal" target="Kendujhar">
+  <data key="d4">81.2</data>
+</edge>
+<edge source="Gajapati" target="Ganjam">
+  <data key="d4">73.55</data>
+</edge>
+<edge source="Gajapati" target="Kandhamal">
+  <data key="d4">106.91</data>
+</edge>
+<edge source="Gajapati" target="Rayagada">
+  <data key="d4">71.07</data>
+</edge>
+<edge source="Ganjam" target="Kandhamal">
+  <data key="d4">85.85</data>
+</edge>
+<edge source="Ganjam" target="Khordha">
+  <data key="d4">101.86</data>
+</edge>
+<edge source="Ganjam" target="Nayagarh">
+  <data key="d4">73.66</data>
+</edge>
+<edge source="Ganjam" target="Puri">
+  <data key="d4">113.32</data>
+</edge>
+<edge source="Jagatsinghapur" target="Kendrapara">
+  <data key="d4">46.11</data>
+</edge>
+<edge source="Jagatsinghapur" target="Puri">
+  <data key="d4">75.54</data>
+</edge>
+<edge source="Jajapur" target="Kendrapara">
+  <data key="d4">58.29</data>
+</edge>
+<edge source="Jajapur" target="Kendujhar">
+  <data key="d4">88.8</data>
+</edge>
+<edge source="Jharsuguda" target="Sambalpur">
+  <data key="d4">51.84</data>
+</edge>
+<edge source="Jharsuguda" target="Sundargarh">
+  <data key="d4">64.91</data>
+</edge>
+<edge source="Kalahandi" target="Kandhamal">
+  <data key="d4">102.23</data>
+</edge>
+<edge source="Kalahandi" target="Koraput">
+  <data key="d4">123.77</data>
+</edge>
+<edge source="Kalahandi" target="Nabarangapur">
+  <data key="d4">86.54</data>
+</edge>
+<edge source="Kalahandi" target="Nuapada">
+  <data key="d4">86.56</data>
+</edge>
+<edge source="Kalahandi" target="Rayagada">
+  <data key="d4">70.39</data>
+</edge>
+<edge source="Kandhamal" target="Nayagarh">
+  <data key="d4">99.82</data>
+</edge>
+<edge source="Kandhamal" target="Rayagada">
+  <data key="d4">101.9</data>
+</edge>
+<edge source="Kendujhar" target="Mayurbhanj">
+  <data key="d4">83.1</data>
+</edge>
+<edge source="Kendujhar" target="Sundargarh">
+  <data key="d4">137.29</data>
+</edge>
+<edge source="Khordha" target="Nayagarh">
+  <data key="d4">55.17</data>
+</edge>
+<edge source="Khordha" target="Puri">
+  <data key="d4">32.29</data>
+</edge>
+<edge source="Koraput" target="Malkangiri">
+  <data key="d4">101.78</data>
+</edge>
+<edge source="Koraput" target="Nabarangapur">
+  <data key="d4">94.77</data>
+</edge>
+<edge source="Koraput" target="Rayagada">
+  <data key="d4">103.05</data>
+</edge>
+<edge source="Sambalpur" target="Subarnapur">
+  <data key="d4">74.73</data>
+</edge>
+<edge source="Sambalpur" target="Sundargarh">
+  <data key="d4">73.73</data>
+</edge>
+</graph></graphml>

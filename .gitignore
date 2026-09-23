@@ -25,20 +25,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# model checkpoints (large binaries)
-src/cv_models/checkpoints/
-src/layer2/anomaly_autoencoder/checkpoints/
-*.pt
-*.pth
+# raw datasets & heavy binaries (exceeds GitHub limits)
 *.h5
 *.hdf5
-*.pkl
-*.joblib
 *.onnx
 *.bin
 
+
 # datasets & raw data (exceeds GitHub limits)
-data/
+data/raw/
 data.zip
 *.zip
 *.tar
