@@ -10,6 +10,7 @@ CSVs, which is honest about how little state there currently is to persist.
 Run: uvicorn backend.main:app --reload --port 8000   (from the project root)
 """
 
+import os
 import json
 import sys
 from pathlib import Path
