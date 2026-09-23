@@ -111,15 +111,15 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
         <div class="meta-grid">
           <div class="meta-card">
             <div class="meta-label">Total State Evacuation Target</div>
-            <div class="meta-value">${survey.total_state_evacuation_target.toLocaleString()}</div>
+            <div class="meta-value">${(survey.total_state_evacuation_target || 0).toLocaleString()}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">MCS Shelters Activated</div>
-            <div class="meta-value" style="color: #059669;">${survey.total_shelters_activated}</div>
+            <div class="meta-value" style="color: #059669;">${survey.total_shelters_activated || 0}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">NDRF Teams Pre-positioned</div>
-            <div class="meta-value" style="color: #0284c7;">${survey.total_ndrf_teams_deployed}</div>
+            <div class="meta-value" style="color: #0284c7;">${survey.total_ndrf_teams_deployed || 0}</div>
           </div>
           <div class="meta-card">
             <div class="meta-label">Satellite Anomaly Status</div>
@@ -145,17 +145,17 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
             </tr>
           </thead>
           <tbody>
-            ${survey.district_survey_matrix.map(d => `
+            ${(survey.district_survey_matrix || []).map(d => `
               <tr>
-                <td><strong>${d.district}</strong></td>
-                <td>${d.coastal_distance_km} km</td>
-                <td><strong>${(d.predicted_risk_score * 100).toFixed(1)}%</strong></td>
-                <td><span class="${d.predicted_risk_score >= 0.45 ? 'pill-red' : (d.predicted_risk_score >= 0.25 ? 'pill-amber' : 'pill-green')}">${d.alert_status_pill}</span></td>
-                <td>${d.people_to_evacuate.toLocaleString()}</td>
-                <td>${d.multipurpose_shelters_required}</td>
-                <td>${d.ndrf_teams_required}</td>
-                <td>${d.top_shap_risk_driver}</td>
-                <td>${d.sop_action_directive}</td>
+                <td><strong>${d.district || ''}</strong></td>
+                <td>${d.coastal_distance_km ?? 0} km</td>
+                <td><strong>${((d.predicted_risk_score || 0) * 100).toFixed(1)}%</strong></td>
+                <td><span class="${(d.predicted_risk_score || 0) >= 0.45 ? 'pill-red' : ((d.predicted_risk_score || 0) >= 0.25 ? 'pill-amber' : 'pill-green')}">${d.alert_status_pill || 'Normal'}</span></td>
+                <td>${(d.people_to_evacuate || 0).toLocaleString()}</td>
+                <td>${d.multipurpose_shelters_required || 0}</td>
+                <td>${d.ndrf_teams_required || 0}</td>
+                <td>${d.top_shap_risk_driver || 'Baseline'}</td>
+                <td>${d.sop_action_directive || 'Standard Monitoring'}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -381,19 +381,19 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', margin: '16px 0' }}>
             <div style={{ background: '#f8faf7', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Peak Coastal Wind</span>
-              <strong style={{ fontSize: '1.25rem', color: '#d97706' }}>{survey.peak_coastal_wind_speed_kt} kt ({Math.round(survey.peak_coastal_wind_speed_kt * 1.852)} km/h)</strong>
+              <strong style={{ fontSize: '1.25rem', color: '#d97706' }}>{survey.peak_coastal_wind_speed_kt || 0} kt ({Math.round((survey.peak_coastal_wind_speed_kt || 0) * 1.852)} km/h)</strong>
             </div>
             <div style={{ background: '#f8faf7', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Total State Evacuation Target</span>
-              <strong style={{ fontSize: '1.25rem', color: '#dc2626' }}>{survey.total_state_evacuation_target.toLocaleString()}</strong>
+              <strong style={{ fontSize: '1.25rem', color: '#dc2626' }}>{(survey.total_state_evacuation_target || 0).toLocaleString()}</strong>
             </div>
             <div style={{ background: '#f8faf7', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>MCS Shelters Activated</span>
-              <strong style={{ fontSize: '1.25rem', color: '#059669' }}>{survey.total_shelters_activated}</strong>
+              <strong style={{ fontSize: '1.25rem', color: '#059669' }}>{survey.total_shelters_activated || 0}</strong>
             </div>
             <div style={{ background: '#f8faf7', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>NDRF Teams Deployed</span>
-              <strong style={{ fontSize: '1.25rem', color: '#0284c7' }}>{survey.total_ndrf_teams_deployed}</strong>
+              <strong style={{ fontSize: '1.25rem', color: '#0284c7' }}>{survey.total_ndrf_teams_deployed || 0}</strong>
             </div>
           </div>
 
@@ -418,8 +418,8 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
                   <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#ffffff' : '#f8faf7' }}>
                     <td style={{ padding: '8px 10px', fontWeight: 'bold', color: '#0f172a' }}>{d.district}</td>
                     <td style={{ padding: '8px 10px', color: '#64748b' }}>{d.coastal_distance_km} km</td>
-                    <td style={{ padding: '8px 10px', fontWeight: 'bold', color: d.predicted_risk_score > 0.5 ? '#dc2626' : '#059669' }}>
-                      {(d.predicted_risk_score * 100).toFixed(1)}%
+                    <td style={{ padding: '8px 10px', fontWeight: 'bold', color: (d.predicted_risk_score || 0) > 0.5 ? '#dc2626' : '#059669' }}>
+                      {((d.predicted_risk_score || 0) * 100).toFixed(1)}%
                     </td>
                     <td style={{ padding: '8px 10px' }}>
                       <span style={{
@@ -427,16 +427,16 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
                         fontWeight: 'bold',
                         padding: '2px 8px',
                         borderRadius: '4px',
-                        background: d.predicted_risk_score >= 0.45 ? '#fee2e2' : (d.predicted_risk_score >= 0.25 ? '#fef3c7' : '#d1fae5'),
-                        color: d.predicted_risk_score >= 0.45 ? '#dc2626' : (d.predicted_risk_score >= 0.25 ? '#d97706' : '#059669')
+                        background: (d.predicted_risk_score || 0) >= 0.45 ? '#fee2e2' : ((d.predicted_risk_score || 0) >= 0.25 ? '#fef3c7' : '#d1fae5'),
+                        color: (d.predicted_risk_score || 0) >= 0.45 ? '#dc2626' : ((d.predicted_risk_score || 0) >= 0.25 ? '#d97706' : '#059669')
                       }}>
-                        {d.alert_status_pill}
+                        {d.alert_status_pill || 'Normal'}
                       </span>
                     </td>
-                    <td style={{ padding: '8px 10px', fontWeight: 'bold' }}>{d.people_to_evacuate.toLocaleString()}</td>
-                    <td style={{ padding: '8px 10px', color: '#059669', fontWeight: 'bold' }}>{d.multipurpose_shelters_required}</td>
-                    <td style={{ padding: '8px 10px', color: '#0284c7', fontWeight: 'bold' }}>{d.ndrf_teams_required}</td>
-                    <td style={{ padding: '8px 10px', color: '#64748b', fontSize: '0.78rem' }}>{d.top_shap_risk_driver}</td>
+                    <td style={{ padding: '8px 10px', fontWeight: 'bold' }}>{(d.people_to_evacuate || 0).toLocaleString()}</td>
+                    <td style={{ padding: '8px 10px', color: '#059669', fontWeight: 'bold' }}>{d.multipurpose_shelters_required || 0}</td>
+                    <td style={{ padding: '8px 10px', color: '#0284c7', fontWeight: 'bold' }}>{d.ndrf_teams_required || 0}</td>
+                    <td style={{ padding: '8px 10px', color: '#64748b', fontSize: '0.78rem' }}>{d.top_shap_risk_driver || 'Baseline'}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1471,10 +1471,10 @@ export default function ForecastView() {
                       📊 District Risk Matrix at {formatToIST(currentHorizon.timestamp_formatted) || currentHorizon.timestamp_formatted}
                     </h3>
                     <div style={{ display: 'flex', gap: '14px', fontSize: '0.82rem' }}>
-                      <span>Peak Wind: <strong style={{ color: '#d97706' }}>{currentHorizon.projected_peak_wind_kt} kt ({Math.round(currentHorizon.projected_peak_wind_kt * 1.852)} km/h)</strong></span>
-                      <span>Target Evac: <strong style={{ color: '#dc2626' }}>{currentHorizon.total_state_evacuation_target.toLocaleString()}</strong></span>
-                      <span>MCS Shelters: <strong style={{ color: '#059669' }}>{currentHorizon.total_shelters_activated}</strong></span>
-                      <span>NDRF Teams: <strong style={{ color: '#0284c7' }}>{currentHorizon.total_ndrf_teams_deployed}</strong></span>
+                      <span>Peak Wind: <strong style={{ color: '#d97706' }}>{currentHorizon.projected_peak_wind_kt || 0} kt ({Math.round((currentHorizon.projected_peak_wind_kt || 0) * 1.852)} km/h)</strong></span>
+                      <span>Target Evac: <strong style={{ color: '#dc2626' }}>{(currentHorizon.total_state_evacuation_target || 0).toLocaleString()}</strong></span>
+                      <span>MCS Shelters: <strong style={{ color: '#059669' }}>{currentHorizon.total_shelters_activated || 0}</strong></span>
+                      <span>NDRF Teams: <strong style={{ color: '#0284c7' }}>{currentHorizon.total_ndrf_teams_deployed || 0}</strong></span>
                     </div>
                   </div>
 
@@ -1497,8 +1497,8 @@ export default function ForecastView() {
                           <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#ffffff' : '#f8faf7' }}>
                             <td style={{ padding: '8px 10px', fontWeight: 'bold', color: '#0f172a' }}>{d.district}</td>
                             <td style={{ padding: '8px 10px', color: '#64748b' }}>{d.coastal_distance_km} km</td>
-                            <td style={{ padding: '8px 10px', fontWeight: 'bold', color: d.predicted_risk_score > 0.45 ? '#dc2626' : '#059669' }}>
-                              {(d.predicted_risk_score * 100).toFixed(1)}%
+                            <td style={{ padding: '8px 10px', fontWeight: 'bold', color: (d.predicted_risk_score || 0) > 0.45 ? '#dc2626' : '#059669' }}>
+                              {((d.predicted_risk_score || 0) * 100).toFixed(1)}%
                             </td>
                             <td style={{ padding: '8px 10px' }}>
                               <span style={{
@@ -1506,18 +1506,18 @@ export default function ForecastView() {
                                 fontWeight: 'bold',
                                 padding: '2px 8px',
                                 borderRadius: '4px',
-                                background: d.predicted_risk_score >= 0.45 ? '#fee2e2' : (d.predicted_risk_score >= 0.25 ? '#fef3c7' : '#d1fae5'),
-                                color: d.predicted_risk_score >= 0.45 ? '#dc2626' : (d.predicted_risk_score >= 0.25 ? '#d97706' : '#059669')
+                                background: (d.predicted_risk_score || 0) >= 0.45 ? '#fee2e2' : ((d.predicted_risk_score || 0) >= 0.25 ? '#fef3c7' : '#d1fae5'),
+                                color: (d.predicted_risk_score || 0) >= 0.45 ? '#dc2626' : ((d.predicted_risk_score || 0) >= 0.25 ? '#d97706' : '#059669')
                               }}>
-                                {d.alert_status_pill}
+                                {d.alert_status_pill || 'Normal'}
                               </span>
                             </td>
                             <td style={{ padding: '8px 10px', color: '#d97706', fontWeight: 'bold' }}>
-                              {d.projected_wind_kt} kt ({Math.round(d.projected_wind_kt * 1.852)} km/h)
+                              {d.projected_wind_kt || 0} kt ({Math.round((d.projected_wind_kt || 0) * 1.852)} km/h)
                             </td>
-                            <td style={{ padding: '8px 10px', fontWeight: 'bold' }}>{d.people_to_evacuate.toLocaleString()}</td>
-                            <td style={{ padding: '8px 10px', color: '#059669', fontWeight: 'bold' }}>{d.multipurpose_shelters_required}</td>
-                            <td style={{ padding: '8px 10px', color: '#0284c7', fontWeight: 'bold' }}>{d.ndrf_teams_required}</td>
+                            <td style={{ padding: '8px 10px', fontWeight: 'bold' }}>{(d.people_to_evacuate || 0).toLocaleString()}</td>
+                            <td style={{ padding: '8px 10px', color: '#059669', fontWeight: 'bold' }}>{d.multipurpose_shelters_required || 0}</td>
+                            <td style={{ padding: '8px 10px', color: '#0284c7', fontWeight: 'bold' }}>{d.ndrf_teams_required || 0}</td>
                           </tr>
                         ))}
                       </tbody>
