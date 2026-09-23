@@ -18,9 +18,8 @@ shapely
 networkx
 imdtrack
 easyocr
+python-multipart
+google-genai
 prisma>=0.11.0
 
-# optional: only needed if you set GEMINI_API_KEY (or GOOGLE_API_KEY) to
-# enable the real LLM tool-use loop in src/agent/agent.py (falls back to
-# rule-based routing without it)
-# google-genai
+
