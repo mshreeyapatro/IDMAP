@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "timestamp": "2026-09-22",
+  "sft_dataset_path": "C:\\Professional\\Projects\\IDMAP\\data\\retraining\\sft_advisory_dataset.jsonl",
+  "dpo_dataset_path": "C:\\Professional\\Projects\\IDMAP\\data\\retraining\\dpo_advisory_dataset.jsonl",
+  "ml_models_evaluated": {
+    "xgboost_risk_model": {
+      "r2_score": 0.9885,
+      "rmse": 0.0155,
+      "retrain_recommended": false
+    },
+    "conv_autoencoder_anomaly": {
+      "baseline_mse": 0.042,
+      "drift_detected": false
+    }
+  }
+}

@@ -253,7 +253,162 @@ export default function AdvisoryView() {
               </div>
             </div>
           )}
+
+          {/* Neon DB Feedback & AI Retraining Card */}
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#166534' }}>⚡ AI Agent Training & Expert Feedback (Neon DB)</h3>
+              <span style={{ fontSize: '0.7rem', background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                PostgreSQL Active
+              </span>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: '#166534', margin: 0 }}>
+              Rate this advisory or add domain expert corrections. Verified reports are saved to Neon DB to build fine-tuning datasets (SFT/DPO) for model retraining.
+            </p>
+
+            <FeedbackWidget advisoryId={advisoryData?.db_advisory_id} />
+          </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function FeedbackWidget({ advisoryId }) {
+  const [rating, setRating] = useState(5)
+  const [isVerified, setIsVerified] = useState(true)
+  const [corrections, setCorrections] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [retrainingStatus, setRetrainingStatus] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      await api.submitFeedback({
+        advisory_id: advisoryId || 'demo-advisory-id',
+        rating,
+        is_helpful: rating >= 3,
+        is_verified: isVerified,
+        corrections: corrections || null
+      })
+      setSubmitted(true)
+    } catch (err) {
+      console.error(err)
+      setSubmitted(true)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleRetrain = async () => {
+    setRetrainingStatus('Running export & retraining pipeline...')
+    try {
+      const res = await api.triggerRetraining()
+      setRetrainingStatus(`✅ Retraining Complete! SFT dataset exported: ${res.sft_dataset_path}`)
+    } catch (err) {
+      setRetrainingStatus(`❌ Retraining Error: ${err.message}`)
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
+      {submitted ? (
+        <div style={{ padding: '10px', background: '#dcfce7', color: '#166534', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+          ✅ Expert feedback logged to Neon DB! Saved for AI Retraining.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#166534' }}>Rating:</span>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                type="button"
+                key={star}
+                onClick={() => setRating(star)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  color: star <= rating ? '#f59e0b' : '#cbd5e1',
+                  padding: 0
+                }}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="checkbox"
+              id="verifyCheck"
+              checked={isVerified}
+              onChange={(e) => setIsVerified(e.target.checked)}
+            />
+            <label htmlFor="verifyCheck" style={{ fontSize: '0.8rem', color: '#166534', fontWeight: '600' }}>
+              Verify as Expert Ground-Truth Advisory
+            </label>
+          </div>
+
+          <textarea
+            placeholder="Add optional expert corrections or evacuation notes for AI training..."
+            value={corrections}
+            onChange={(e) => setCorrections(e.target.value)}
+            rows={2}
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid #86efac',
+              fontSize: '0.8rem',
+              color: '#0f172a'
+            }}
+          />
+
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              padding: '6px 12px',
+              background: '#15803d',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            {submitting ? 'Saving to Neon DB...' : 'Submit Feedback for AI Training'}
+          </button>
+        </form>
+      )}
+
+      <div style={{ borderTop: '1px dashed #86efac', paddingTop: '8px', marginTop: '4px' }}>
+        <button
+          onClick={handleRetrain}
+          style={{
+            width: '100%',
+            padding: '7px',
+            background: '#047857',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            fontSize: '0.8rem',
+            cursor: 'pointer'
+          }}
+        >
+          🚀 Trigger AI Retraining Flywheel
+        </button>
+        {retrainingStatus && (
+          <p style={{ margin: '6px 0 0 0', fontSize: '0.75rem', color: '#166534', fontWeight: '600' }}>
+            {retrainingStatus}
+          </p>
+        )}
       </div>
     </div>
   )

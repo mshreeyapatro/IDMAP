@@ -25,17 +25,39 @@ sys.path.insert(0, str(ROOT))
 
 from src.agent import tools as agent_tools
 from src.agent import agent as agent_module
+from src.db.db import connect_db, disconnect_db
+from src.db import crud as db_crud
+from src.db import cache_service
+from src.retraining import retrain_pipeline
 
 app = FastAPI(
     title="IDMAP-Cyclone API",
-    description="Odisha cyclone intelligence backend. See /api/status for what's "
-                 "actually implemented vs. still blocked on missing data.",
-    version="0.1.0",
+    description="Odisha cyclone intelligence backend with Neon DB & Prisma ORM persistence.",
+    version="0.2.0",
 )
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        await connect_db()
+    except Exception as e:
+        print(f"Warning: Neon DB connection on startup failed: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    try:
+        await disconnect_db()
+    except Exception as e:
+        print(f"Warning: Neon DB disconnect on shutdown failed: {e}")
+
+cors_env = os.getenv("CORS_ORIGINS", "*")
+origins = [o.strip() for o in cors_env.split(",") if o.strip()] if cors_env != "*" else ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -80,6 +102,14 @@ class WhatIfRequest(BaseModel):
     new_coastal_distance_km: Optional[float] = None
 
 
+class FeedbackRequest(BaseModel):
+    advisory_id: str
+    rating: int
+    is_helpful: bool = True
+    is_verified: bool = False
+    corrections: Optional[str] = None
+
+
 @app.get("/api/status")
 def get_status():
     return agent_tools.get_project_status()
@@ -104,11 +134,24 @@ def get_anomalies(top_n: int = 10, only_flagged: bool = True):
 
 
 @app.post("/api/predict")
-def predict_event(req: EventPredictRequest):
-    """Phase 3/4 CV Model Prediction & Anomaly score endpoint."""
+async def predict_event(req: EventPredictRequest):
+    """Phase 3/4 CV Model Prediction & Anomaly score endpoint with Neon DB logging."""
     result = agent_tools.predict_event(req.base_id)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
+
+    # Log to Neon DB via Prisma asynchronously
+    prediction_id = await db_crud.log_prediction(
+        event_id=req.base_id,
+        predicted_category=result.get("intensity_category", "Unknown"),
+        severity=result.get("severity", "Low"),
+        anomaly_error=result.get("anomaly_error", 0.0),
+        vmax_proxy_kt=result.get("vmax_proxy_kt", 0.0),
+        confidence=result.get("confidence", 1.0)
+    )
+    if prediction_id:
+        result["db_prediction_id"] = prediction_id
+
     return result
 
 
@@ -193,9 +236,9 @@ async def analyze_image(file: UploadFile = File(...)):
 
 
 @app.get("/api/live/weather")
-def get_live_weather():
-    """Live Weather Ingestion via Open-Meteo API for 6 Odisha coastal/district stations."""
-    return agent_tools.get_live_weather_feed()
+async def get_live_weather(refresh: bool = False):
+    """Live Weather Ingestion with automatic Neon DB persistence & zero-blank caching."""
+    return await cache_service.get_or_refresh_live_weather(force_refresh=refresh)
 
 
 @app.get("/api/live/satellite")
@@ -235,10 +278,9 @@ def generate_live_advisory():
 
 
 @app.post("/api/unified-live-survey")
-def get_unified_live_survey():
-    """Fuses all 5 AI/ML models into a single live Odisha disaster survey."""
-    from src.agent import unified_survey
-    return unified_survey.generate_unified_live_survey()
+async def get_unified_live_survey(refresh: bool = False):
+    """Fuses all 5 AI/ML models into a single live Odisha disaster survey with automatic Neon DB caching."""
+    return await cache_service.get_or_refresh_unified_survey(force_refresh=refresh)
 
 
 
@@ -251,12 +293,52 @@ def retrieve_knowledge(req: RetrieveRequest):
 
 
 @app.post("/api/advisory")
-def generate_advisory(req: AdvisoryRequest):
-    """Phase 10 Fused Multimodal CV + RAG Evidence-Grounded Advisory Report endpoint."""
+async def generate_advisory(req: AdvisoryRequest):
+    """Phase 10 Fused Multimodal CV + RAG Evidence-Grounded Advisory Report endpoint with Neon DB logging."""
     result = agent_tools.generate_advisory(req.base_id, task=req.task)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
+
+    # Persist advisory to Neon DB
+    advisory_id = await db_crud.log_agent_advisory(
+        event_id=req.base_id,
+        prompt=f"Generate advisory report for base_id={req.base_id}, task={req.task}",
+        advisory_text=result.get("advisory_markdown", ""),
+        citations=result.get("citations", [])
+    )
+    if advisory_id:
+        result["db_advisory_id"] = advisory_id
+
     return result
+
+
+@app.post("/api/feedback")
+async def submit_feedback(req: FeedbackRequest):
+    """Submits human-in-the-loop expert rating and corrections for an AI advisory."""
+    feedback_id = await db_crud.log_human_feedback(
+        advisory_id=req.advisory_id,
+        rating=req.rating,
+        is_helpful=req.is_helpful,
+        is_verified=req.is_verified,
+        corrections=req.corrections
+    )
+    if not feedback_id:
+        raise HTTPException(status_code=500, detail="Failed to persist feedback record to Neon DB.")
+    return {"status": "success", "feedback_id": feedback_id}
+
+
+@app.get("/api/history/advisories")
+async def get_advisory_history(limit: int = 20):
+    """Retrieves stored historical advisories along with human feedback from Neon DB."""
+    advisories = await db_crud.fetch_advisories_with_feedback(limit=limit)
+    return {"count": len(advisories), "advisories": advisories}
+
+
+@app.post("/api/retrain/run")
+async def run_retraining():
+    """Triggers the automated retraining & AI dataset export pipeline."""
+    report = await retrain_pipeline.run_retraining_pipeline()
+    return report
 
 
 @app.get("/api/district-graph")
@@ -266,6 +348,18 @@ def get_district_graph(district: Optional[str] = None):
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
     return result
+
+
+@app.post("/api/forecast/short-range")
+async def forecast_short_range(refresh: bool = False):
+    """Phase 12: 48-Hour Short-Range Operational Cyclone Track & Landfall Forecast with Neon DB caching."""
+    return await cache_service.get_or_refresh_short_range_forecast(force_refresh=refresh)
+
+
+@app.get("/api/forecast/seasonal-60day")
+async def forecast_seasonal_outlook(refresh: bool = False):
+    """Phase 12: 60-Day (2-Month) Seasonal Cyclone Probability & Vulnerability Outlook with Neon DB caching."""
+    return await cache_service.get_or_refresh_seasonal_outlook(force_refresh=refresh)
 
 
 @app.post("/api/agent/ask")

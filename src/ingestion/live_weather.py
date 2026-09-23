@@ -55,7 +55,7 @@ def fetch_station_weather(station_name: str, coords: dict) -> dict:
         f"https://api.open-meteo.com/v1/forecast?"
         f"latitude={lat}&longitude={lon}&"
         f"current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation&"
-        f"hourly=temperature_2m,surface_pressure,wind_speed_10m,precipitation&forecast_days=1"
+        f"hourly=temperature_2m,surface_pressure,wind_speed_10m,precipitation&wind_speed_unit=ms&forecast_days=1"
     )
 
     req = urllib.request.Request(url, headers={"User-Agent": "IDMAP-Disaster-Intelligence/1.0"})
@@ -132,6 +132,121 @@ def get_live_weather_feed() -> dict:
     }
 
 
+def get_nwp_vertical_steering_flow(lat: float = 19.5, lon: float = 86.2) -> dict:
+    """
+    Ingests vertical pressure-level wind components (850, 700, 500, 300, 200 hPa)
+    from Open-Meteo NWP Pressure Levels API and computes the deep-layer mass-weighted
+    environmental steering vector V_steer = (u_steer, v_steer).
+
+    Weights:
+    - 850 hPa: 0.15 (boundary layer coupling)
+    - 700 hPa: 0.25 (lower troposphere steering)
+    - 500 hPa: 0.35 (mid-troposphere subtropical ridge steering - primary)
+    - 300 hPa: 0.15 (upper-troposphere outflow interaction)
+    - 200 hPa: 0.10 (cirrus outflow layer)
+    """
+    import math
+
+    weights = {
+        "850": 0.15,
+        "700": 0.25,
+        "500": 0.35,
+        "300": 0.15,
+        "200": 0.10
+    }
+
+    # Default fallback: 315° NW at 14.8 km/h (8.0 kt)
+    default_heading_deg = 315.0
+    default_speed_kmh = 14.8
+    rad = math.radians(default_heading_deg)
+    # Meteorological direction: wind moving towards heading
+    u_default = (default_speed_kmh / 3.6) * math.sin(rad)
+    v_default = (default_speed_kmh / 3.6) * math.cos(rad)
+
+    url = (
+        f"https://api.open-meteo.com/v1/forecast?"
+        f"latitude={lat}&longitude={lon}&"
+        f"hourly=wind_speed_850hPa,wind_direction_850hPa,"
+        f"wind_speed_700hPa,wind_direction_700hPa,"
+        f"wind_speed_500hPa,wind_direction_500hPa,"
+        f"wind_speed_300hPa,wind_direction_300hPa,"
+        f"wind_speed_200hPa,wind_direction_200hPa&"
+        f"wind_speed_unit=ms&forecast_days=1"
+    )
+
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "IDMAP-Steering-Ingest/1.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+
+        hourly = data.get("hourly", {})
+        u_weighted = 0.0
+        v_weighted = 0.0
+        total_w = 0.0
+        layer_breakdown = {}
+
+        for level, w in weights.items():
+            spd_arr = hourly.get(f"wind_speed_{level}hPa", [])
+            dir_arr = hourly.get(f"wind_direction_{level}hPa", [])
+            if spd_arr and dir_arr:
+                spd_ms = float(spd_arr[0])
+                dir_deg = float(dir_arr[0])
+                # Meteorological wind blows from dir_deg, so cyclone is steered towards (dir_deg + 180) % 360
+                # or motion vector u = -spd * sin(dir), v = -spd * cos(dir)
+                rad_d = math.radians(dir_deg)
+                u_level = -spd_ms * math.sin(rad_d)
+                v_level = -spd_ms * math.cos(rad_d)
+
+                u_weighted += u_level * w
+                v_weighted += v_level * w
+                total_w += w
+                layer_breakdown[f"{level}hPa"] = {
+                    "speed_ms": spd_ms,
+                    "direction_deg": dir_deg,
+                    "weight": w
+                }
+
+        if total_w > 0:
+            u_steer_ms = u_weighted / total_w
+            v_steer_ms = v_weighted / total_w
+            speed_ms = math.sqrt(u_steer_ms ** 2 + v_steer_ms ** 2)
+            speed_kmh = round(speed_ms * 3.6, 1)
+            speed_kt = round(speed_ms * 1.94384, 1)
+            # Motion heading angle
+            heading_deg = round((math.degrees(math.atan2(u_steer_ms, v_steer_ms)) + 360.0) % 360.0, 1)
+
+            return {
+                "source": "Open-Meteo NWP Pressure Levels API (Deep Layer 850-200 hPa)",
+                "coordinates": {"lat": lat, "lon": lon},
+                "u_steering_ms": round(u_steer_ms, 2),
+                "v_steering_ms": round(v_steer_ms, 2),
+                "steering_speed_kmh": max(6.0, speed_kmh),
+                "steering_speed_kt": max(3.5, speed_kt),
+                "steering_heading_deg": heading_deg,
+                "pressure_levels": layer_breakdown,
+                "is_fallback": False
+            }
+
+    except Exception as e:
+        pass
+
+    # Clean Fallback
+    return {
+        "source": "Climatological Deep-Layer Steering (Fallback)",
+        "coordinates": {"lat": lat, "lon": lon},
+        "u_steering_ms": round(u_default, 2),
+        "v_steering_ms": round(v_default, 2),
+        "steering_speed_kmh": default_speed_kmh,
+        "steering_speed_kt": round(default_speed_kmh / 1.852, 1),
+        "steering_heading_deg": default_heading_deg,
+        "pressure_levels": {},
+        "is_fallback": True
+    }
+
+
 if __name__ == "__main__":
     feed = get_live_weather_feed()
     print(json.dumps(feed, indent=2))
+    print("\n--- Deep Layer Steering ---")
+    print(json.dumps(get_nwp_vertical_steering_flow(), indent=2))
+

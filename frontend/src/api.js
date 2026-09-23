@@ -1,4 +1,4 @@
-export const API_BASE = 'http://localhost:8000'
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 async function getJSON(path) {
   const res = await fetch(`${API_BASE}${path}`)
@@ -97,14 +97,34 @@ export const api = {
     const res = await fetch(`${API_BASE}/api/analyze-live-satellite`, { method: 'POST' })
     return res.json()
   },
-  liveWeather: () => getJSON('/api/live/weather'),
+  liveWeather: (refresh = false) => getJSON(`/api/live/weather?refresh=${typeof refresh === 'boolean' ? refresh : false}`),
   liveSatellite: () => getJSON('/api/live/satellite'),
   liveAdvisory: async () => {
     const res = await fetch(`${API_BASE}/api/live/advisory`, { method: 'POST' })
     return res.json()
   },
-  unifiedLiveSurvey: async () => {
-    const res = await fetch(`${API_BASE}/api/unified-live-survey`, { method: 'POST' })
+  unifiedLiveSurvey: async (refresh = false) => {
+    const isRefresh = typeof refresh === 'boolean' ? refresh : false
+    const res = await fetch(`${API_BASE}/api/unified-live-survey?refresh=${isRefresh}`, { method: 'POST' })
+    return res.json()
+  },
+  shortRangeForecast: async (refresh = false) => {
+    const isRefresh = typeof refresh === 'boolean' ? refresh : false
+    const res = await fetch(`${API_BASE}/api/forecast/short-range?refresh=${isRefresh}`, { method: 'POST' })
+    return res.json()
+  },
+  seasonalOutlook: (refresh = false) => getJSON(`/api/forecast/seasonal-60day?refresh=${typeof refresh === 'boolean' ? refresh : false}`),
+  submitFeedback: async (feedbackData) => {
+    const res = await fetch(`${API_BASE}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(feedbackData),
+    })
+    return res.json()
+  },
+  advisoryHistory: (limit = 20) => getJSON(`/api/history/advisories?limit=${limit}`),
+  triggerRetraining: async () => {
+    const res = await fetch(`${API_BASE}/api/retrain/run`, { method: 'POST' })
     return res.json()
   },
   imageUrl: (relativeUrl) => `${API_BASE}${relativeUrl}`,

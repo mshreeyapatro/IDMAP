@@ -3,6 +3,7 @@ const NAV_SECTIONS = [
     header: 'OVERVIEW & MONITORING',
     items: [
       { id: 'overview', label: 'Overview', icon: '🏠' },
+      { id: 'forecast', label: 'Predictive Future Forecast', icon: '🔮' },
       { id: 'liveMonitor', label: 'Live Weather & Satellite', icon: '📡' },
       { id: 'districtGraph', label: 'District Spatial Risk Map', icon: '⚑' },
     ]

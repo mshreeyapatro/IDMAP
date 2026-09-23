@@ -11,6 +11,26 @@ function StatCard({ label, value, hint, color }) {
   )
 }
 
+const formatIST = (timestamp) => {
+  if (!timestamp) return ''
+  try {
+    const d = new Date(timestamp)
+    if (isNaN(d.getTime())) return timestamp
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    }) + ' IST'
+  } catch (e) {
+    return timestamp
+  }
+}
+
 export default function Overview({ onSelectEvent, onNavigateTab }) {
   const [status, setStatus] = useState(null)
   const [events, setEvents] = useState(null)
@@ -18,9 +38,9 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
   const [survey, setSurvey] = useState(null)
   const [loadingSurvey, setLoadingSurvey] = useState(false)
 
-  const fetchSurvey = () => {
+  const fetchSurvey = (forceRefresh = false) => {
     setLoadingSurvey(true)
-    api.unifiedLiveSurvey()
+    api.unifiedLiveSurvey(forceRefresh)
       .then((data) => {
         setSurvey(data)
         setLoadingSurvey(false)
@@ -32,11 +52,11 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
     api.status().then(setStatus).catch(() => setStatus({}))
     api.events().then(setEvents).catch(() => setEvents([]))
     api.anomalies(100, true).then(setAnomalies).catch(() => setAnomalies([]))
-    fetchSurvey()
+    fetchSurvey(false)
 
     // Auto refresh survey every 5 minutes (300,000 ms) to keep data alive
     const interval = setInterval(() => {
-      api.unifiedLiveSurvey().then(setSurvey).catch(() => {})
+      api.unifiedLiveSurvey(true).then(setSurvey).catch(() => { })
     }, 300000)
 
     return () => clearInterval(interval)
@@ -82,7 +102,7 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
         </div>
 
         <div style="font-size: 11px; color: #475569; margin-bottom: 16px;">
-          <strong>Report Generated:</strong> ${new Date(survey.survey_timestamp).toUTCString()} | 
+          <strong>Report Generated:</strong> ${formatIST(survey.survey_timestamp)} | 
           <strong>Satellite Pass:</strong> ${survey.satellite_pass_date} | 
           <strong>Peak Coastal Wind:</strong> ${survey.peak_coastal_wind_speed_kt} kt (${Math.round(survey.peak_coastal_wind_speed_kt * 1.852)} km/h) | 
           <strong>Min Pressure:</strong> ${survey.min_coastal_pressure_hpa} hPa
@@ -161,6 +181,15 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
   const totalImages = events.reduce((sum, e) => sum + e.raw_image_count + e.infrared_image_count, 0)
 
   const developments = [
+    {
+      id: 'forecast',
+      title: '🔮 Dual-Horizon Future Forecasting Suite',
+      category: 'TEMPORAL PREDICTION',
+      description: '48-hour short-range operational storm track trajectory scrubbing fused with 60-day (2-month) seasonal cyclone probability outlooks.',
+      badge: '48h Track & 60-Day Outlook',
+      color: '#059669',
+      bg: 'rgba(5, 150, 105, 0.06)'
+    },
     {
       id: 'liveMonitor',
       title: '📡 Live Station Telemetry & NASA Satellite Pass',
@@ -282,8 +311,8 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
       ) : (
         /* Loaded Unified Live State Survey Banner (Stays ALIVE during refreshes, updating data in place) */
         <div className="card" style={{ borderTop: '4px solid #059669', background: '#ffffff', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }}>
-            <div>
+          <div style={{ paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a' }}>⚡ Unified State Live Risk Survey</span>
                 {(() => {
@@ -302,49 +331,50 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
                   )
                 })()}
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
-                Last Unified Survey Pass: {new Date(survey.survey_timestamp).toUTCString()} | Satellite Date: {survey.satellite_pass_date}
-              </p>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                  onClick={() => fetchSurvey(true)}
+                  disabled={loadingSurvey}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    background: loadingSurvey ? '#047857' : '#059669',
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: loadingSurvey ? 'wait' : 'pointer',
+                    fontSize: '0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {loadingSurvey && <span className="spinner-icon" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#ffffff' }}></span>}
+                  {loadingSurvey ? '⚡ Syncing Survey...' : '🔄 Refresh Unified Live Survey'}
+                </button>
+
+                <button
+                  onClick={generatePDFReport}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    background: '#d97706',
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  📄 Download Executive PDF State Report
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={fetchSurvey}
-                disabled={loadingSurvey}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  background: loadingSurvey ? '#047857' : '#059669',
-                  color: '#ffffff',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  cursor: loadingSurvey ? 'wait' : 'pointer',
-                  fontSize: '0.85rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                {loadingSurvey && <span className="spinner-icon" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#ffffff' }}></span>}
-                {loadingSurvey ? '⚡ Syncing Survey...' : '🔄 Refresh Unified Live Survey'}
-              </button>
-
-              <button
-                onClick={generatePDFReport}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  background: '#d97706',
-                  color: '#ffffff',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem'
-                }}
-              >
-                📄 Download Executive PDF State Report
-              </button>
-            </div>
+            <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+              Last Unified Survey Pass: {formatIST(survey.survey_timestamp)} | Satellite Date: {survey.satellite_pass_date}
+            </p>
           </div>
 
           {/* Unified State Totals Grid */}
@@ -368,7 +398,7 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
           </div>
 
           {/* 10-District Resource Matrix Table */}
-          <h3 style={{ margin: '16px 0 10px', fontSize: '1rem', color: '#0f172a' }}>📊 10-District Disaster Alert & Resource Matrix</h3>
+          <h3 style={{ margin: '16px 0 10px', fontSize: '1rem', color: '#0f172a' }}>📊 District Disaster Alert & Resource Matrix</h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
               <thead>

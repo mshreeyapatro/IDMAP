@@ -11,6 +11,26 @@ function getStormCategory(windKt) {
   return { label: 'Deep Depression', color: '#059669', bg: '#d1fae5' }
 }
 
+const formatIST = (timestamp) => {
+  if (!timestamp) return ''
+  try {
+    const d = new Date(timestamp)
+    if (isNaN(d.getTime())) return timestamp
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    }) + ' IST'
+  } catch (e) {
+    return timestamp
+  }
+}
+
 export default function EventDrawer({ baseId, onClose }) {
   const [detail, setDetail] = useState(null)
   const [activeTab, setActiveTab] = useState('summary')
@@ -43,7 +63,7 @@ export default function EventDrawer({ baseId, onClose }) {
               )}
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
-              {detail?.timestamp ? new Date(detail.timestamp).toUTCString() : 'Historical Sensor Record'}
+              {detail?.timestamp ? formatIST(detail.timestamp) : 'Historical Sensor Record'}
             </p>
           </div>
           <button className="drawer-close-btn" onClick={onClose} title="Close Panel">✕</button>

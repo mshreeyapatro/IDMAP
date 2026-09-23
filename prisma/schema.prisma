@@ -1,0 +1,145 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+model CycloneEvent {
+  id                String            @id @default(uuid())
+  baseId            Int               @unique
+  name              String?
+  timestamp         DateTime          @default(now())
+  windSpeedKt       Float
+  pressureHpa       Float
+  latitude          Float
+  longitude         Float
+  intensityCategory String
+  predictions       ModelPrediction[]
+  advisories        AgentAdvisory[]
+  createdAt         DateTime          @default(now())
+}
+
+model LiveObservation {
+  id           String   @id @default(uuid())
+  stationName  String
+  latitude     Float
+  longitude    Float
+  temperatureC Float?
+  windSpeedKt  Float
+  windGustKt   Float?
+  pressureHpa  Float
+  recordedAt   DateTime @default(now())
+}
+
+model ModelPrediction {
+  id                String             @id @default(uuid())
+  eventId           Int?
+  cycloneEvent      CycloneEvent?      @relation(fields: [eventId], references: [baseId])
+  predictedCategory String
+  severity          String
+  anomalyError      Float
+  vmaxProxyKt       Float
+  confidence        Float              @default(1.0)
+  shapAttributions  ShapAttribution?
+  districtForecasts DistrictForecast[]
+  createdAt         DateTime           @default(now())
+}
+
+model ShapAttribution {
+  id           String          @id @default(uuid())
+  predictionId String          @unique
+  prediction   ModelPrediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  baseValue    Float
+  shapValues   Json
+  createdAt    DateTime        @default(now())
+}
+
+model DistrictForecast {
+  id                 String          @id @default(uuid())
+  predictionId       String
+  prediction         ModelPrediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  districtName       String
+  riskScore          Float
+  shelterCapacity    Int
+  evacuationTarget   Int
+  ndrfTeamsAllocated Int
+}
+
+model AgentAdvisory {
+  id           String         @id @default(uuid())
+  eventId      Int?
+  event        CycloneEvent?  @relation(fields: [eventId], references: [baseId])
+  prompt       String
+  advisoryText String         @db.Text
+  citations    Json
+  feedback     HumanFeedback?
+  createdAt    DateTime       @default(now())
+}
+
+model HumanFeedback {
+  id          String        @id @default(uuid())
+  advisoryId  String        @unique
+  advisory    AgentAdvisory @relation(fields: [advisoryId], references: [id], onDelete: Cascade)
+  rating      Int
+  isHelpful   Boolean
+  isVerified  Boolean       @default(false)
+  corrections String?       @db.Text
+  createdAt   DateTime      @default(now())
+}
+
+model WhatIfSimulation {
+  id                    String   @id @default(uuid())
+  baseId                Int
+  deltaWindSpeedKt      Float
+  newCoastalDistanceKm  Float?
+  simulatedRiskCategory String
+  simulatedSeverity     String
+  createdAt             DateTime @default(now())
+}
+
+model LiveWeatherCache {
+  id                    String   @id @default(uuid())
+  maxCoastalWindSpeedKt Float
+  minCoastalPressureHpa Float
+  overallStateSeverity  String
+  stationDataJson       Json
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
+}
+
+model ShortRangeForecastCache {
+  id                      String   @id @default(uuid())
+  warningStage            String
+  maxProjectedWindKt      Float
+  minProjectedPressureHpa Float
+  landfallEstHours        Float?
+  forecastMatrixJson      Json
+  districtCurvesJson      Json
+  updatedAt               DateTime @updatedAt
+  createdAt               DateTime @default(now())
+}
+
+model SeasonalOutlookCache {
+  id                       String   @id @default(uuid())
+  overallBasinActivityRisk String
+  districtRankingsJson     Json
+  peakRiskWindowsJson      Json
+  updatedAt                DateTime @updatedAt
+  createdAt                DateTime @default(now())
+}
+
+model UnifiedSurveyCache {
+  id               String   @id @default(uuid())
+  stateSeverity    String
+  maxWindSpeedKt   Float
+  minPressureHpa   Float
+  surveyMatrixJson Json
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+}

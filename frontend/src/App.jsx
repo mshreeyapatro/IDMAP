@@ -14,6 +14,7 @@ import ShapView from './components/ShapView'
 import WhatIfView from './components/WhatIfView'
 import ResourcePlanningView from './components/ResourcePlanningView'
 import LiveMonitorView from './components/LiveMonitorView'
+import ForecastView from './components/ForecastView'
 
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -39,6 +40,7 @@ function App() {
       />
       <main className="main-content">
         {activeTab === 'overview' && <Overview onSelectEvent={setSelectedEvent} onNavigateTab={setActiveTab} />}
+        {activeTab === 'forecast' && <ForecastView />}
         {activeTab === 'liveMonitor' && <LiveMonitorView />}
         {activeTab === 'advisory' && <AdvisoryView />}
         {activeTab === 'events' && <EventsView onSelectEvent={setSelectedEvent} />}

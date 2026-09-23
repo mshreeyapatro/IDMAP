@@ -42,7 +42,7 @@ def get_resource_plan(
             df["coastal_distance_km"] = 150.0
 
     # If wind speed is below Depression threshold (28 kt), no emergency evacuation is needed
-    if wind_speed_kt < 28.0 or severity_level.lower() == "normal":
+    if wind_speed_kt < 28.0:
         mult = 0.0
     elif wind_speed_kt < 34.0:
         mult = 0.03
@@ -60,7 +60,8 @@ def get_resource_plan(
     for _, row in df.iterrows():
         d_name = row["district"]
         pop = row.get("population", 1000000)
-        coastal_dist = row.get("coastal_distance_km", 150.0)
+        raw_dist = row.get("coastal_distance_km")
+        coastal_dist = float(raw_dist) if (pd.notna(raw_dist) and raw_dist is not None) else 100.0
 
         # Coastal risk decay factor
         if mult == 0.0:
