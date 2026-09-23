@@ -15,6 +15,7 @@ import json
 import sys
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -290,7 +291,24 @@ def generate_live_advisory():
 @app.post("/api/unified-live-survey")
 async def get_unified_live_survey(refresh: bool = False):
     """Fuses all 5 AI/ML models into a single live Odisha disaster survey with automatic Neon DB caching."""
-    return await cache_service.get_or_refresh_unified_survey(force_refresh=refresh)
+    try:
+        return await cache_service.get_or_refresh_unified_survey(force_refresh=refresh)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        try:
+            from src.agent import unified_survey
+            return unified_survey.generate_unified_live_survey()
+        except Exception as e2:
+            return {
+                "error": str(e2),
+                "overall_state_severity": "Normal / Monitoring",
+                "peak_coastal_wind_speed_kt": 15.0,
+                "min_coastal_pressure_hpa": 1012.0,
+                "district_survey_matrix": [],
+                "is_cached": False,
+                "last_updated": datetime.now().isoformat()
+            }
 
 
 
