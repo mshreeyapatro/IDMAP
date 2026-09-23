@@ -52,12 +52,21 @@ async def shutdown_event():
     except Exception as e:
         print(f"Warning: Neon DB disconnect on shutdown failed: {e}")
 
-cors_env = os.getenv("CORS_ORIGINS", "*")
-origins = [o.strip() for o in cors_env.split(",") if o.strip()] if cors_env != "*" else ["*"]
+cors_env = os.getenv("CORS_ORIGINS", "")
+parsed_origins = [o.strip() for o in cors_env.split(",") if o.strip() and o.strip() != "*"]
+
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "https://idmapfrontend.vercel.app",
+]
+allowed_origins = list(set(default_origins + parsed_origins))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
