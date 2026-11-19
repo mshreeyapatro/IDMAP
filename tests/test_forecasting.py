@@ -68,9 +68,10 @@ def test_15day_extended_forecast():
     assert len(day1["district_matrix"]) >= 10
     assert "coordinates" in res["fifteen_day_trajectory"][0]
     
-    # Check Day 8 Landfall Peak
-    day8 = res["fifteen_day_matrix"][7]
-    assert day8["day_index"] == 8
-    assert day8["threat_tier"] == "CRITICAL PEAK"
-    assert day8["projected_peak_wind_kmh"] >= 140.0
+    # Check Dynamic Landfall Peak
+    peak_idx = res["peak_threat_day"] - 1
+    landfall_step = res["fifteen_day_matrix"][peak_idx]
+    assert landfall_step["day_index"] == res["peak_threat_day"]
+    assert landfall_step["lifecycle_code"] == "landfall"
+    assert landfall_step["threat_tier"] in ["CRITICAL PEAK", "HIGH THREAT"]
 

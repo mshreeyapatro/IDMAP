@@ -2083,7 +2083,10 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                             ⏮️ {fifteenDaySteps[0]?.date_str || 'Day 1'} • Approach
                           </button>
                           {(() => {
-                            const landIdx = Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1))
+                            const landIdx = (() => {
+                              const codeIdx = fifteenDaySteps.findIndex(s => s.lifecycle_code === 'landfall')
+                              return codeIdx !== -1 ? codeIdx : Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1))
+                            })()
                             return (
                               <button
                                 type="button"
@@ -2096,7 +2099,14 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                             )
                           })()}
                           {(() => {
-                            const decayIdx = Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2)))
+                            const landIdx = (() => {
+                              const codeIdx = fifteenDaySteps.findIndex(s => s.lifecycle_code === 'landfall')
+                              return codeIdx !== -1 ? codeIdx : Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1))
+                            })()
+                            const decayIdx = (() => {
+                              const codeIdx = fifteenDaySteps.findIndex(s => s.lifecycle_code === 'inland_decay')
+                              return codeIdx !== -1 ? codeIdx : Math.min(14, landIdx + 1)
+                            })()
                             return (
                               <button
                                 type="button"
@@ -2109,7 +2119,14 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                             )
                           })()}
                           {(() => {
-                            const floodIdx = Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) + 1))
+                            const landIdx = (() => {
+                              const codeIdx = fifteenDaySteps.findIndex(s => s.lifecycle_code === 'landfall')
+                              return codeIdx !== -1 ? codeIdx : Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1))
+                            })()
+                            const floodIdx = (() => {
+                              const codeIdx = fifteenDaySteps.findIndex(s => s.lifecycle_code === 'river_flood_crest')
+                              return codeIdx !== -1 ? codeIdx : Math.min(14, landIdx + 2)
+                            })()
                             return (
                               <button
                                 type="button"
@@ -2209,7 +2226,10 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '6px', padding: '0 2px' }}>
                       {fifteenDaySteps.map((step, idx) => {
                         const isSelected = selected15DayIdx === idx
-                        const isLandfall = seasonal?.is_cyclone_active && idx === Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1))
+                        const isLandfall = seasonal?.is_cyclone_active && (
+                          step.lifecycle_code === 'landfall' ||
+                          (!fifteenDaySteps.some(s => s.lifecycle_code === 'landfall') && idx === Math.max(0, Math.min(14, (seasonal.peak_threat_day || 2) - 1)))
+                        )
                         return (
                           <div
                             key={idx}
