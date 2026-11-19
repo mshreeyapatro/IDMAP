@@ -8,10 +8,20 @@ Guarantees:
 
 import json
 import logging
+import asyncio
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 
 logger = logging.getLogger("idmap.cache")
+
+
+async def _safe_prisma_op(coro, timeout: float = 2.0):
+    """Executes a Prisma query with a strict timeout so idle serverless poolers never hang the API."""
+    try:
+        return await asyncio.wait_for(coro, timeout=timeout)
+    except (asyncio.TimeoutError, Exception, BaseException) as e:
+        logger.warning(f"Prisma DB operation failed or timed out ({e}); proceeding with fast fallback.")
+        return None
 
 
 def is_cache_expired(updated_at: Optional[datetime], max_age_seconds: int = 180) -> bool:
@@ -40,7 +50,7 @@ async def get_or_refresh_live_weather(force_refresh: bool = False) -> Dict[str, 
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected() and not force_refresh:
-            cached = await prisma.liveweathercache.find_first(order={"updatedAt": "desc"})
+            cached = await _safe_prisma_op(prisma.liveweathercache.find_first(order={"updatedAt": "desc"}), timeout=1.5)
             if cached and not is_cache_expired(cached.updatedAt, max_age_seconds=180):
                 payload = json.loads(cached.stationDataJson) if isinstance(cached.stationDataJson, str) else cached.stationDataJson
                 if isinstance(payload, dict):
@@ -65,13 +75,16 @@ async def get_or_refresh_live_weather(force_refresh: bool = False) -> Dict[str, 
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected():
-            await prisma.liveweathercache.create(
-                data={
-                    "maxCoastalWindSpeedKt": float(fresh_data.get("max_coastal_wind_speed_kt", 0.0)),
-                    "minCoastalPressureHpa": float(fresh_data.get("min_coastal_pressure_hpa", 1010.0)),
-                    "overallStateSeverity": fresh_data.get("overall_state_severity", "Normal"),
-                    "stationDataJson": json.dumps(fresh_data),
-                }
+            await _safe_prisma_op(
+                prisma.liveweathercache.create(
+                    data={
+                        "maxCoastalWindSpeedKt": float(fresh_data.get("max_coastal_wind_speed_kt", 0.0)),
+                        "minCoastalPressureHpa": float(fresh_data.get("min_coastal_pressure_hpa", 1010.0)),
+                        "overallStateSeverity": fresh_data.get("overall_state_severity", "Normal"),
+                        "stationDataJson": json.dumps(fresh_data),
+                    }
+                ),
+                timeout=1.5
             )
             logger.info("Successfully updated LiveWeatherCache in Neon DB.")
     except Exception as e:
@@ -82,15 +95,24 @@ async def get_or_refresh_live_weather(force_refresh: bool = False) -> Dict[str, 
     return fresh_data
 
 
-async def get_or_refresh_short_range_forecast(force_refresh: bool = False) -> Dict[str, Any]:
+async def get_or_refresh_short_range_forecast(force_refresh: bool = False, mode: str = "simulated") -> Dict[str, Any]:
     """
     Returns latest cached 48-Hour Short-Range Track Forecast matrix from Neon DB.
     If cache is older than 3 minutes or force_refresh is True, auto-recomputes fresh live forecast.
+    Supports mode='simulated' and mode='live'.
     """
+    from src.forecasting import predictive_engine
+
+    if mode == "live":
+        fresh_data = predictive_engine.generate_48h_short_range_forecast(mode="live")
+        fresh_data["is_cached"] = False
+        fresh_data["last_updated"] = datetime.now().isoformat()
+        return fresh_data
+
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected() and not force_refresh:
-            cached = await prisma.shortrangeforecastcache.find_first(order={"updatedAt": "desc"})
+            cached = await _safe_prisma_op(prisma.shortrangeforecastcache.find_first(order={"updatedAt": "desc"}), timeout=1.5)
             if cached and not is_cache_expired(cached.updatedAt, max_age_seconds=180):
                 payload = json.loads(cached.forecastMatrixJson) if isinstance(cached.forecastMatrixJson, str) else cached.forecastMatrixJson
                 if isinstance(payload, dict):
@@ -111,21 +133,27 @@ async def get_or_refresh_short_range_forecast(force_refresh: bool = False) -> Di
     except Exception as e:
         logger.warning(f"Failed to read short range forecast cache from Neon DB: {e}")
 
-    from src.forecasting import predictive_engine
-    fresh_data = predictive_engine.generate_48h_short_range_forecast()
+    fresh_data = predictive_engine.generate_48h_short_range_forecast(mode="simulated")
 
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected():
-            await prisma.shortrangeforecastcache.create(
-                data={
-                    "warningStage": fresh_data.get("warning_stage", fresh_data.get("state_severity", "Normal Watch")),
-                    "maxProjectedWindKt": float(fresh_data.get("max_projected_wind_kt", 0.0)),
-                    "minProjectedPressureHpa": float(fresh_data.get("min_projected_pressure_hpa", 1000.0)),
-                    "landfallEstHours": float(fresh_data.get("landfall_est_hours")) if fresh_data.get("landfall_est_hours") is not None else None,
-                    "forecastMatrixJson": json.dumps(fresh_data),
-                    "districtCurvesJson": json.dumps(fresh_data.get("district_risk_curves", [])),
-                }
+            max_wind = fresh_data.get("projected_peak_landfall_wind_kt") or fresh_data.get("max_projected_wind_kt", 0.0)
+            min_pressure = fresh_data.get("projected_min_landfall_pressure_hpa") or fresh_data.get("min_projected_pressure_hpa", 1000.0)
+            etl_h = fresh_data.get("estimated_time_to_landfall_hours") if fresh_data.get("estimated_time_to_landfall_hours") is not None else fresh_data.get("landfall_est_hours")
+
+            await _safe_prisma_op(
+                prisma.shortrangeforecastcache.create(
+                    data={
+                        "warningStage": fresh_data.get("warning_stage", fresh_data.get("state_severity", "Normal Watch")),
+                        "maxProjectedWindKt": float(max_wind),
+                        "minProjectedPressureHpa": float(min_pressure),
+                        "landfallEstHours": float(etl_h) if etl_h is not None else None,
+                        "forecastMatrixJson": json.dumps(fresh_data),
+                        "districtCurvesJson": json.dumps(fresh_data.get("district_risk_curves", [])),
+                    }
+                ),
+                timeout=1.5
             )
             logger.info("Successfully updated ShortRangeForecastCache in Neon DB.")
     except Exception as e:
@@ -136,57 +164,80 @@ async def get_or_refresh_short_range_forecast(force_refresh: bool = False) -> Di
     return fresh_data
 
 
-async def get_or_refresh_seasonal_outlook(force_refresh: bool = False) -> Dict[str, Any]:
+async def get_or_refresh_15day_forecast(force_refresh: bool = False, mode: str = "simulated") -> Dict[str, Any]:
     """
-    Returns latest cached 60-Day Seasonal Vulnerability Outlook from Neon DB.
+    Returns latest cached 15-Day Extended Horizon Forecast from Neon DB.
     Auto-computes and rewrites Neon DB cache on refresh (TTL: 1 hour).
     """
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected() and not force_refresh:
-            cached = await prisma.seasonaloutlookcache.find_first(order={"updatedAt": "desc"})
+            cached = await _safe_prisma_op(prisma.seasonaloutlookcache.find_first(order={"updatedAt": "desc"}), timeout=1.5)
             if cached and not is_cache_expired(cached.updatedAt, max_age_seconds=3600):
                 payload = json.loads(cached.districtRankingsJson) if isinstance(cached.districtRankingsJson, str) else cached.districtRankingsJson
-                if isinstance(payload, dict):
-                    payload["is_cached"] = True
-                    payload["last_updated"] = cached.updatedAt.isoformat() if isinstance(cached.updatedAt, datetime) else str(cached.updatedAt)
-                    return payload
+                if isinstance(payload, dict) and "fifteen_day_matrix" in payload:
+                    cached_mode = payload.get("operational_telemetry_mode", "simulated")
+                    if cached_mode == mode:
+                        payload["is_cached"] = True
+                        payload["last_updated"] = cached.updatedAt.isoformat() if isinstance(cached.updatedAt, datetime) else str(cached.updatedAt)
+                        return payload
             elif cached:
-                logger.info("Seasonal outlook cache expired (>1h). Auto-refreshing...")
+                logger.info("15-day forecast cache expired (>1h). Auto-refreshing...")
     except Exception as e:
-        logger.warning(f"Failed to read seasonal outlook cache from Neon DB: {e}")
+        logger.warning(f"Failed to read 15-day forecast cache from Neon DB: {e}")
 
     from src.forecasting import predictive_engine
-    fresh_data = predictive_engine.generate_60day_seasonal_outlook()
+    fresh_data = predictive_engine.generate_15day_extended_forecast(mode=mode)
+    fresh_data["operational_telemetry_mode"] = mode
 
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected():
-            await prisma.seasonaloutlookcache.create(
-                data={
-                    "overallBasinActivityRisk": fresh_data.get("overall_60day_threat_level", "Moderate"),
-                    "districtRankingsJson": json.dumps(fresh_data),
-                    "peakRiskWindowsJson": json.dumps(fresh_data.get("risk_windows", [])),
-                }
+            await _safe_prisma_op(
+                prisma.seasonaloutlookcache.create(
+                    data={
+                        "overallBasinActivityRisk": fresh_data.get("overall_15day_threat_level", "Critical"),
+                        "districtRankingsJson": json.dumps(fresh_data),
+                        "peakRiskWindowsJson": json.dumps(fresh_data.get("fifteen_day_readiness_phases", [])),
+                    }
+                ),
+                timeout=1.5
             )
-            logger.info("Successfully updated SeasonalOutlookCache in Neon DB.")
+            logger.info("Successfully updated 15-Day Extended Forecast Cache in Neon DB.")
     except Exception as e:
-        logger.warning(f"Failed to update SeasonalOutlookCache in Neon DB: {e}")
+        logger.warning(f"Failed to update 15-day forecast in Neon DB: {e}")
 
     fresh_data["is_cached"] = False
     fresh_data["last_updated"] = datetime.now().isoformat()
     return fresh_data
 
 
-async def get_or_refresh_unified_survey(force_refresh: bool = False) -> Dict[str, Any]:
+async def get_or_refresh_seasonal_outlook(force_refresh: bool = False) -> Dict[str, Any]:
+    """
+    Backward-compatible wrapper returning the 15-Day Extended Forecast / Seasonal Outlook.
+    """
+    return await get_or_refresh_15day_forecast(force_refresh=force_refresh)
+
+
+
+async def get_or_refresh_unified_survey(force_refresh: bool = False, mode: str = "simulated") -> Dict[str, Any]:
     """
     Returns latest cached Unified 5-Model Disaster Survey from Neon DB.
     If cache is older than 3 minutes or force_refresh is True, auto-recomputes fresh survey.
+    Supports mode='simulated' and mode='live'.
     """
+    from src.agent import unified_survey
+
+    if mode == "live":
+        fresh_data = unified_survey.generate_unified_live_survey(mode="live")
+        fresh_data["is_cached"] = False
+        fresh_data["last_updated"] = datetime.now().isoformat()
+        return fresh_data
+
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected() and not force_refresh:
-            cached = await prisma.unifiedsurveycache.find_first(order={"updatedAt": "desc"})
+            cached = await _safe_prisma_op(prisma.unifiedsurveycache.find_first(order={"updatedAt": "desc"}), timeout=1.5)
             if cached and not is_cache_expired(cached.updatedAt, max_age_seconds=180):
                 payload = json.loads(cached.surveyMatrixJson) if isinstance(cached.surveyMatrixJson, str) else cached.surveyMatrixJson
                 if isinstance(payload, dict):
@@ -204,19 +255,21 @@ async def get_or_refresh_unified_survey(force_refresh: bool = False) -> Dict[str
     except Exception as e:
         logger.warning(f"Failed to read unified survey cache from Neon DB: {e}")
 
-    from src.agent import unified_survey
-    fresh_data = unified_survey.generate_unified_live_survey()
+    fresh_data = unified_survey.generate_unified_live_survey(mode="simulated")
 
     try:
         from src.db.db import prisma
         if prisma is not None and prisma.is_connected():
-            await prisma.unifiedsurveycache.create(
-                data={
-                    "stateSeverity": fresh_data.get("overall_state_severity", "Normal"),
-                    "maxWindSpeedKt": float(fresh_data.get("peak_coastal_wind_speed_kt", 0.0)),
-                    "minPressureHpa": float(fresh_data.get("min_coastal_pressure_hpa", 1010.0)),
-                    "surveyMatrixJson": json.dumps(fresh_data),
-                }
+            await _safe_prisma_op(
+                prisma.unifiedsurveycache.create(
+                    data={
+                        "stateSeverity": fresh_data.get("overall_state_severity", "Normal"),
+                        "maxWindSpeedKt": float(fresh_data.get("peak_coastal_wind_speed_kt", 0.0)),
+                        "minPressureHpa": float(fresh_data.get("min_coastal_pressure_hpa", 1010.0)),
+                        "surveyMatrixJson": json.dumps(fresh_data),
+                    }
+                ),
+                timeout=1.5
             )
             logger.info("Successfully updated UnifiedSurveyCache in Neon DB.")
     except Exception as e:

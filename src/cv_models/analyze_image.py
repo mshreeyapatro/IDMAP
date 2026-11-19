@@ -103,19 +103,25 @@ def analyze_uploaded_image(image_bytes: bytes) -> dict:
             }))
 
     # Automated Eye / Circulation Centroid Localization from 2D Satellite Image Grid
-    # Map from [0, 128] image space onto the Bay of Bengal Bounding Box: [15.0N, 80.0E, 22.5N, 92.0E]
-    bbox_lat_min, bbox_lat_max = 15.0, 22.5
-    bbox_lon_min, bbox_lon_max = 80.0, 92.0
+    # True Geographic Domain of the Bay of Bengal Basin: [8.0°N, 80.0°E] to [22.5°N, 94.0°E]
+    # Spanning the entire active cyclonogenesis domain (Southern Bay, Central Bay, and Odisha-Bengal Bight)
+    bbox_lat_min, bbox_lat_max = 8.0, 22.5
+    bbox_lon_min, bbox_lon_max = 80.0, 94.0
 
-    # Isolate the active Bay of Bengal marine cyclone corridor (83.0E - 88.0E, 16.0N - 20.5N)
-    # to eliminate unrelated terrestrial or distant northeast monsoon cloud interference
-    x1 = int(round((83.0 - bbox_lon_min) / (bbox_lon_max - bbox_lon_min) * 128))
-    x2 = int(round((88.0 - bbox_lon_min) / (bbox_lon_max - bbox_lon_min) * 128))
-    y1 = int(round((bbox_lat_max - 20.5) / (bbox_lat_max - bbox_lat_min) * 128))
-    y2 = int(round((bbox_lat_max - 16.0) / (bbox_lat_max - bbox_lat_min) * 128))
+    # Locate the deep convective core across the full marine domain of the Bay of Bengal
+    # Marine sub-grid: 80.5°E to 93.5°E, 8.5°N to 22.0°N
+    x1 = int(round((80.5 - bbox_lon_min) / (bbox_lon_max - bbox_lon_min) * 128))
+    x2 = int(round((93.5 - bbox_lon_min) / (bbox_lon_max - bbox_lon_min) * 128))
+    y1 = int(round((bbox_lat_max - 22.0) / (bbox_lat_max - bbox_lat_min) * 128))
+    y2 = int(round((bbox_lat_max - 8.5) / (bbox_lat_max - bbox_lat_min) * 128))
+
+    x1, x2 = max(0, min(127, x1)), max(0, min(128, x2))
+    y1, y2 = max(0, min(127, y1)), max(0, min(128, y2))
 
     sub_arr = arr[y1:y2, x1:x2]
-    sub_w = np.maximum(0.0, sub_arr - np.mean(sub_arr)) ** 2
+    # Weight by squared brightness anomaly to isolate deep convective eyewall/cluster from diffuse cirrus
+    mean_val = float(np.mean(sub_arr))
+    sub_w = np.maximum(0.0, sub_arr - mean_val) ** 2
     total_w = float(np.sum(sub_w))
 
     if total_w > 0.01:
@@ -127,11 +133,12 @@ def analyze_uploaded_image(image_bytes: bytes) -> dict:
         detected_lat = round(bbox_lat_max - norm_y * (bbox_lat_max - bbox_lat_min), 2)
         detected_lon = round(bbox_lon_min + norm_x * (bbox_lon_max - bbox_lon_min), 2)
     else:
-        detected_lat, detected_lon = 18.36, 85.48
+        # Default physical centroid of the central Bay of Bengal marine basin
+        detected_lat, detected_lon = 14.50, 86.50
 
-    # Clamp to realistic Bay of Bengal marine domain
-    detected_lat = float(max(15.5, min(21.5, detected_lat)))
-    detected_lon = float(max(81.5, min(90.5, detected_lon)))
+    # Genuine physical bounds of the Bay of Bengal maritime basin
+    detected_lat = float(max(8.0, min(22.5, detected_lat)))
+    detected_lon = float(max(80.0, min(94.0, detected_lon)))
     detected_heading = 315.0
 
     return {

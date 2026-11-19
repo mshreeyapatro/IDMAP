@@ -103,17 +103,18 @@ export const api = {
     const res = await fetch(`${API_BASE}/api/live/advisory`, { method: 'POST' })
     return res.json()
   },
-  unifiedLiveSurvey: async (refresh = false) => {
+  unifiedLiveSurvey: async (refresh = false, mode = 'simulated') => {
     const isRefresh = typeof refresh === 'boolean' ? refresh : false
-    const res = await fetch(`${API_BASE}/api/unified-live-survey?refresh=${isRefresh}`, { method: 'POST' })
+    const res = await fetch(`${API_BASE}/api/unified-live-survey?refresh=${isRefresh}&mode=${encodeURIComponent(mode)}`, { method: 'POST' })
     return res.json()
   },
-  shortRangeForecast: async (refresh = false) => {
+  shortRangeForecast: async (refresh = false, mode = 'simulated') => {
     const isRefresh = typeof refresh === 'boolean' ? refresh : false
-    const res = await fetch(`${API_BASE}/api/forecast/short-range?refresh=${isRefresh}`, { method: 'POST' })
+    const res = await fetch(`${API_BASE}/api/forecast/short-range?refresh=${isRefresh}&mode=${encodeURIComponent(mode)}`, { method: 'POST' })
     return res.json()
   },
-  seasonalOutlook: (refresh = false) => getJSON(`/api/forecast/seasonal-60day?refresh=${typeof refresh === 'boolean' ? refresh : false}`),
+  seasonalOutlook: (refresh = false, mode = 'simulated') => getJSON(`/api/forecast/15day?refresh=${typeof refresh === 'boolean' ? refresh : false}&mode=${encodeURIComponent(mode)}`),
+  forecast15Day: (refresh = false, mode = 'simulated') => getJSON(`/api/forecast/15day?refresh=${typeof refresh === 'boolean' ? refresh : false}&mode=${encodeURIComponent(mode)}`),
   submitFeedback: async (feedbackData) => {
     const res = await fetch(`${API_BASE}/api/feedback`, {
       method: 'POST',

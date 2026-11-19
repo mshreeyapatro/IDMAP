@@ -17,10 +17,26 @@ import LiveMonitorView from './components/LiveMonitorView'
 import ForecastView from './components/ForecastView'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('forecast')
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [phasesDone, setPhasesDone] = useState(0)
   const [phasesTotal, setPhasesTotal] = useState(0)
+  const [telemetryMode, setTelemetryMode] = useState('simulated') // 'simulated' | 'live'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('idmap_sidebar_collapsed') === 'true'
+  })
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev
+      localStorage.setItem('idmap_sidebar_collapsed', String(next))
+      return next
+    })
+  }
+
+  const toggleTelemetryMode = () => {
+    setTelemetryMode(prev => prev === 'simulated' ? 'live' : 'simulated')
+  }
 
   useEffect(() => {
     api.status().then((status) => {
@@ -31,17 +47,21 @@ function App() {
   }, [])
 
   return (
-    <div id="app-shell">
+    <div id="app-shell" className={sidebarCollapsed ? 'sidebar-collapsed' : ''}>
       <Sidebar
         activeTab={activeTab}
         onNavigateTab={setActiveTab}
         phasesDone={phasesDone}
         phasesTotal={phasesTotal}
+        telemetryMode={telemetryMode}
+        onToggleTelemetryMode={toggleTelemetryMode}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
-      <main className="main-content">
-        {activeTab === 'overview' && <Overview onSelectEvent={setSelectedEvent} onNavigateTab={setActiveTab} />}
-        {activeTab === 'forecast' && <ForecastView />}
-        {activeTab === 'liveMonitor' && <LiveMonitorView />}
+      <main className={`main-content ${activeTab === 'forecast' ? 'forecast-mode' : ''}`}>
+        {activeTab === 'overview' && <Overview onSelectEvent={setSelectedEvent} onNavigateTab={setActiveTab} telemetryMode={telemetryMode} onToggleTelemetryMode={toggleTelemetryMode} />}
+        {activeTab === 'forecast' && <ForecastView telemetryMode={telemetryMode} onToggleTelemetryMode={toggleTelemetryMode} />}
+        {activeTab === 'liveMonitor' && <LiveMonitorView telemetryMode={telemetryMode} onToggleTelemetryMode={toggleTelemetryMode} />}
         {activeTab === 'advisory' && <AdvisoryView />}
         {activeTab === 'events' && <EventsView onSelectEvent={setSelectedEvent} />}
         {activeTab === 'anomalies' && <AnomaliesView onSelectEvent={setSelectedEvent} />}

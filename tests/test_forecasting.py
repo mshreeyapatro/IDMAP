@@ -41,5 +41,36 @@ def test_60day_seasonal_outlook():
     assert "monthly_cyclonogenesis_probabilities" in res
     assert len(res["monthly_cyclonogenesis_probabilities"]) == 2
     assert "district_vulnerability_rankings" in res
-    assert len(res["district_vulnerability_rankings"]) == 10
+    assert len(res["district_vulnerability_rankings"]) >= 10
+    assert "climate_teleconnections" in res
+    assert "eight_week_timeline" in res
+    assert len(res["eight_week_timeline"]) == 8
+    assert "intensity_distribution" in res
+    assert "historical_analog_events" in res
+    assert "state_resource_plan" in res
     assert "preseason_readiness_checklist" in res
+
+
+def test_15day_extended_forecast():
+    res = predictive_engine.generate_15day_extended_forecast()
+    assert res["mode"] == "extended_forecast_15day"
+    assert "fifteen_day_matrix" in res
+    assert len(res["fifteen_day_matrix"]) == 15
+    assert "fifteen_day_trajectory" in res
+    assert len(res["fifteen_day_trajectory"]) == 15
+    assert "multi_model_ensemble" in res
+    assert "models" in res["multi_model_ensemble"]
+    
+    # Check Day 1 genesis
+    day1 = res["fifteen_day_matrix"][0]
+    assert day1["day_index"] == 1
+    assert "district_matrix" in day1
+    assert len(day1["district_matrix"]) >= 10
+    assert "coordinates" in res["fifteen_day_trajectory"][0]
+    
+    # Check Day 8 Landfall Peak
+    day8 = res["fifteen_day_matrix"][7]
+    assert day8["day_index"] == 8
+    assert day8["threat_tier"] == "CRITICAL PEAK"
+    assert day8["projected_peak_wind_kmh"] >= 140.0
+

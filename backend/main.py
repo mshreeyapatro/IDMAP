@@ -59,6 +59,8 @@ parsed_origins = [o.strip() for o in cors_env.split(",") if o.strip() and o.stri
 default_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
     "https://idmapfrontend.vercel.app",
 ]
@@ -289,16 +291,16 @@ def generate_live_advisory():
 
 
 @app.post("/api/unified-live-survey")
-async def get_unified_live_survey(refresh: bool = False):
+async def get_unified_live_survey(refresh: bool = False, mode: str = "simulated"):
     """Fuses all 5 AI/ML models into a single live Odisha disaster survey with automatic Neon DB caching."""
     try:
-        return await cache_service.get_or_refresh_unified_survey(force_refresh=refresh)
+        return await cache_service.get_or_refresh_unified_survey(force_refresh=refresh, mode=mode)
     except Exception as e:
         import traceback
         traceback.print_exc()
         try:
             from src.agent import unified_survey
-            return unified_survey.generate_unified_live_survey()
+            return unified_survey.generate_unified_live_survey(mode=mode)
         except Exception as e2:
             return {
                 "error": str(e2),
@@ -378,16 +380,25 @@ def get_district_graph(district: Optional[str] = None):
     return result
 
 
+@app.get("/api/forecast/short-range")
 @app.post("/api/forecast/short-range")
-async def forecast_short_range(refresh: bool = False):
+async def forecast_short_range(refresh: bool = False, mode: str = "simulated"):
     """Phase 12: 48-Hour Short-Range Operational Cyclone Track & Landfall Forecast with Neon DB caching."""
-    return await cache_service.get_or_refresh_short_range_forecast(force_refresh=refresh)
+    return await cache_service.get_or_refresh_short_range_forecast(force_refresh=refresh, mode=mode)
+
+
+@app.get("/api/forecast/15day")
+@app.post("/api/forecast/15day")
+async def forecast_15day_extended(refresh: bool = False, mode: str = "simulated"):
+    """Phase 12: 15-Day Extended Horizon Forecast & Multi-Model Ensemble with Neon DB caching."""
+    return await cache_service.get_or_refresh_15day_forecast(force_refresh=refresh, mode=mode)
 
 
 @app.get("/api/forecast/seasonal-60day")
-async def forecast_seasonal_outlook(refresh: bool = False):
-    """Phase 12: 60-Day (2-Month) Seasonal Cyclone Probability & Vulnerability Outlook with Neon DB caching."""
-    return await cache_service.get_or_refresh_seasonal_outlook(force_refresh=refresh)
+async def forecast_seasonal_outlook(refresh: bool = False, mode: str = "simulated"):
+    """Phase 12: 15-Day Extended Horizon Forecast (backward-compatible seasonal endpoint)."""
+    return await cache_service.get_or_refresh_15day_forecast(force_refresh=refresh, mode=mode)
+
 
 
 @app.post("/api/agent/ask")

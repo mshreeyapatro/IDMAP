@@ -130,6 +130,15 @@ cd ..
 ```
 
 ### 3. Run Development Servers
+
+**Option A: Run Everything in One Command (Recommended)**
+```bash
+npm run dev
+# or: npm start
+```
+This concurrently starts both the FastAPI backend (`http://localhost:8000`) and the React dashboard (`http://localhost:5173`) with live reload and unified color-coded logging.
+
+**Option B: Run Separately in Individual Terminals**
 ```bash
 # Terminal 1: Start FastAPI Backend
 uvicorn backend.main:app --reload --port 8000

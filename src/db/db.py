@@ -15,15 +15,35 @@ except ImportError:
 
 
 async def connect_db():
-    """Connect to Neon DB via Prisma Client."""
+    """Connect to Neon DB via Prisma Client with graceful offline fallback."""
     if prisma is not None and not prisma.is_connected():
-        await prisma.connect()
+        try:
+            await prisma.connect()
+        except Exception as e:
+            print(f"Warning: Neon DB connection failed (falling back to in-memory/CSV mode): {e}")
+        except BaseException as e:
+            print(f"Warning: Prisma engine could not connect: {e}")
 
 
 async def disconnect_db():
     """Disconnect from Neon DB."""
     if prisma is not None and prisma.is_connected():
         await prisma.disconnect()
+
+
+async def reconnect_db():
+    """Recycles dropped connections after serverless idle timeouts from Neon PgBouncer pooler."""
+    global prisma
+    if prisma is not None:
+        try:
+            if prisma.is_connected():
+                await prisma.disconnect()
+        except Exception:
+            pass
+        try:
+            await prisma.connect()
+        except Exception as e:
+            print(f"Warning: Neon DB auto-reconnect failed: {e}")
 
 
 def get_db():

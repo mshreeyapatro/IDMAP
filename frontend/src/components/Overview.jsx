@@ -185,8 +185,8 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
       id: 'forecast',
       title: '🔮 Dual-Horizon Future Forecasting Suite',
       category: 'TEMPORAL PREDICTION',
-      description: '48-hour short-range operational storm track trajectory scrubbing fused with 60-day (2-month) seasonal cyclone probability outlooks.',
-      badge: '48h Track & 60-Day Outlook',
+      description: '48-hour short-range operational storm track trajectory scrubbing fused with 15-day extended horizon multi-model ensemble forecast.',
+      badge: '48h Track & 15-Day Ensemble',
       color: '#059669',
       bg: 'rgba(5, 150, 105, 0.06)'
     },
@@ -399,11 +399,11 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
 
           {/* 10-District Resource Matrix Table */}
           <h3 style={{ margin: '16px 0 10px', fontSize: '1rem', color: '#0f172a' }}>📊 District Disaster Alert & Resource Matrix</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+          <div className="table-scroll-container">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '850px' }}>
               <thead>
                 <tr style={{ background: '#f1f5f9', color: '#0f172a', textTransform: 'uppercase', fontSize: '0.75rem' }}>
-                  <th style={{ padding: '8px 10px', textAlign: 'left', borderBottom: '2px solid #e2e8f0' }}>District</th>
+                  <th className="sticky-col" style={{ padding: '8px 10px', textAlign: 'left', borderBottom: '2px solid #e2e8f0', background: '#f1f5f9', minWidth: '120px' }}>District</th>
                   <th style={{ padding: '8px 10px', textAlign: 'left', borderBottom: '2px solid #e2e8f0' }}>Proximity</th>
                   <th style={{ padding: '8px 10px', textAlign: 'left', borderBottom: '2px solid #e2e8f0' }}>Risk Score</th>
                   <th style={{ padding: '8px 10px', textAlign: 'left', borderBottom: '2px solid #e2e8f0' }}>Status Pill</th>
@@ -416,7 +416,7 @@ export default function Overview({ onSelectEvent, onNavigateTab }) {
               <tbody>
                 {survey.district_survey_matrix?.map((d, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#ffffff' : '#f8faf7' }}>
-                    <td style={{ padding: '8px 10px', fontWeight: 'bold', color: '#0f172a' }}>{d.district}</td>
+                    <td className="sticky-col" style={{ padding: '8px 10px', fontWeight: 'bold', color: '#0f172a', background: idx % 2 === 0 ? '#ffffff' : '#f8faf7' }}>{d.district}</td>
                     <td style={{ padding: '8px 10px', color: '#64748b' }}>{d.coastal_distance_km} km</td>
                     <td style={{ padding: '8px 10px', fontWeight: 'bold', color: (d.predicted_risk_score || 0) > 0.5 ? '#dc2626' : '#059669' }}>
                       {((d.predicted_risk_score || 0) * 100).toFixed(1)}%

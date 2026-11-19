@@ -32,6 +32,17 @@ async def test_seasonal_outlook_cache():
 
 
 @pytest.mark.asyncio
+async def test_15day_forecast_cache():
+    """Verify 15-day extended horizon forecast caching returns 15-day timeline matrix."""
+    data = await cache_service.get_or_refresh_15day_forecast(force_refresh=False)
+    assert "fifteen_day_matrix" in data
+    assert len(data["fifteen_day_matrix"]) == 15
+    assert data["mode"] == "extended_forecast_15day"
+    assert "overall_15day_threat_level" in data
+
+
+
+@pytest.mark.asyncio
 async def test_unified_survey_cache():
     """Verify unified live survey caching returns 10-district matrix."""
     data = await cache_service.get_or_refresh_unified_survey(force_refresh=True)

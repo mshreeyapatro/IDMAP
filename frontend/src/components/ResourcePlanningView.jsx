@@ -76,11 +76,11 @@ export default function ResourcePlanningView() {
 
           <div className="card">
             <h3>Odisha District Resource Allocation Breakdown</h3>
-            <div style={{ overflowX: 'auto', marginTop: '15px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div className="table-scroll-container" style={{ marginTop: '15px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem', minWidth: '760px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-dim)' }}>
-                    <th style={{ padding: '10px' }}>District</th>
+                  <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-dim)' }}>
+                    <th className="sticky-col" style={{ padding: '10px', minWidth: '130px', background: 'var(--bg-elevated, #ffffff)' }}>District</th>
                     <th style={{ padding: '10px' }}>Priority Tier</th>
                     <th style={{ padding: '10px' }}>Coastal Dist</th>
                     <th style={{ padding: '10px' }}>Total Pop</th>
@@ -91,8 +91,8 @@ export default function ResourcePlanningView() {
                 </thead>
                 <tbody>
                   {data.district_breakdown?.map((d, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ padding: '10px', fontWeight: 'bold' }}>{d.district}</td>
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td className="sticky-col" style={{ padding: '10px', fontWeight: 'bold', background: 'inherit' }}>{d.district}</td>
                       <td style={{ padding: '10px' }}>
                         <span
                           style={{
