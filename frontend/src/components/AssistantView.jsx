@@ -38,7 +38,7 @@ function Answer({ text }) {
   return <div className="agent-a">{blocks}</div>
 }
 
-export default function AssistantView() {
+export default function AssistantView({ active = true }) {
   const [question, setQuestion] = useState('')
   const [history, setHistory] = useState([]) // [{role:'user'|'model', text}]
   const [turns, setTurns] = useState([])     // [{q, a, mode, sources, tools_used, llm_error, log_id, rated}]
@@ -81,7 +81,7 @@ export default function AssistantView() {
   const clearHistory = () => { setHistory([]); setTurns([]) }
 
   return (
-    <div className="assistant-view">
+    <div className="assistant-view" style={{ display: active ? undefined : 'none' }}>
       <div className="view-header">
         <div className="view-header-row">
           <div>

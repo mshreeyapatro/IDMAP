@@ -70,7 +70,7 @@ function App() {
         {activeTab === 'resources' && <ResourcePlanningView />}
         {activeTab === 'evaluation' && <EvaluationView />}
         {activeTab === 'districtGraph' && <DistrictGraphView />}
-        {activeTab === 'assistant' && <AssistantView />}
+        <AssistantView active={activeTab === 'assistant'} />
       </main>
 
       <EventDrawer baseId={selectedEvent} onClose={() => setSelectedEvent(null)} />
