@@ -21,5 +21,6 @@ easyocr
 python-multipart
 google-genai
 prisma>=0.11.0
+psycopg[binary]==3.2.*
 
 

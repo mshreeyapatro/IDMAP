@@ -31,12 +31,14 @@ from src.db.db import connect_db, disconnect_db
 from src.db import crud as db_crud
 from src.db import cache_service
 from src.retraining import retrain_pipeline
+from src.knowledge_assistant.router import router as knowledge_assistant_router
 
 app = FastAPI(
     title="IDMAP-Cyclone API",
     description="Odisha cyclone intelligence backend with Neon DB & Prisma ORM persistence.",
     version="0.2.0",
 )
+app.include_router(knowledge_assistant_router)
 
 @app.on_event("startup")
 async def startup_event():

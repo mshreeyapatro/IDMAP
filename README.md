@@ -150,3 +150,29 @@ npm run dev
 
 Open `http://localhost:5173` in your browser to interact with the dashboard!
 
+# Disaster Knowledge Assistant integration
+
+The assistant is part of IDMAP's existing FastAPI service and dashboard. After
+the normal project setup, `npm run dev` (or `npm start`) still launches the
+backend and frontend together on ports 8000 and 5173.
+
+For the assistant's retrieval index, set `GEMINI_API_KEY` and `DATABASE_URL`
+in the root `.env`. These can use the same Neon database as the main project;
+`DIRECT_URL` is used for schema setup and document ingestion. Install the
+project dependencies once with `npm run install:all`, then initialize and index
+the project knowledge files:
+
+```sh
+npm run assistant:db:init
+npm run assistant:ingest:dry
+npm run assistant:ingest
+npm run dev
+```
+
+The index reads IDMAP's existing `data/knowledge_base` documents and selected
+district/event CSVs. Runtime weather and official alert status are presented as
+separate sources; the assistant should not infer an official warning level from
+model weather data. The assistant's starter Q&A file is copied to
+`data/knowledge_base/curated_qa.jsonl`; review its answers against the official
+documents before optionally importing them with `npm run assistant:curate:import`.
+
