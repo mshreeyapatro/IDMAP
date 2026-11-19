@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
 
 # The integrated assistant can use its own credentials. If those are omitted,
 # it falls back to the existing IDMAP credentials for a one-database setup.

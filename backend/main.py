@@ -25,6 +25,9 @@ from pydantic import BaseModel
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from dotenv import load_dotenv
+load_dotenv(ROOT / ".env")
+
 from src.agent import tools as agent_tools
 from src.agent import agent as agent_module
 from src.db.db import connect_db, disconnect_db
