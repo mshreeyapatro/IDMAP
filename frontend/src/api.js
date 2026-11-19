@@ -13,11 +13,12 @@ export const api = {
   anomalies: (topN = 10, onlyFlagged = true) =>
     getJSON(`/api/anomalies?top_n=${topN}&only_flagged=${onlyFlagged}`),
   ask: async (question, history = []) => {
-    const res = await fetch(`${API_BASE}/api/agent/ask`, {
+    const res = await fetch(`${API_BASE}/api/assistant/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, history }),
     })
+    if (!res.ok) throw new Error(`/api/assistant/ask -> ${res.status}`)
     return res.json()
   },
   evaluation: () => getJSON('/api/evaluation'),

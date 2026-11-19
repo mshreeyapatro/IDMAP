@@ -1691,7 +1691,17 @@ def generate_15day_extended_forecast(mode: str = "simulated") -> dict:
         }
     }
 
-    landfall_day = max(1, min(3, int(math.ceil(etl_hours / 24.0)))) if is_cyclone_active else 0
+    # Calibrated IST landfall timestamps & calendar day indexing
+    now_ist = now_dt + timedelta(hours=5, minutes=30)
+    landfall_day_dt = now_dt + timedelta(hours=etl_hours, minutes=330)
+    landfall_str = landfall_day_dt.strftime('%d %b, %I:%M %p IST')
+    forecast_window_str = f"{now_ist.strftime('%d %b')} - {(now_ist + timedelta(days=14)).strftime('%d %b %Y')} (15-Day Extended Horizon)"
+
+    if is_cyclone_active:
+        cal_days = (landfall_day_dt.date() - now_ist.date()).days
+        landfall_day = max(1, min(14, cal_days + 1))
+    else:
+        landfall_day = 0
 
     # 4. Generate Dynamic 15-Day Time-Step Matrix (Day 1 to Day 15)
     fifteen_day_matrix = []
@@ -1973,11 +1983,6 @@ def generate_15day_extended_forecast(mode: str = "simulated") -> dict:
             "total_ndrf_teams_deployed": state_odraf_platoons,
             "district_matrix": district_matrix
         })
-
-    # Landfall timestamp & dates
-    landfall_day_dt = now_dt + timedelta(hours=etl_hours, minutes=330)
-    landfall_str = landfall_day_dt.strftime('%d %b, %I:%M %p IST')
-    forecast_window_str = f"{now_dt.strftime('%d %b')} - {(now_dt + timedelta(days=14)).strftime('%d %b %Y')} (15-Day Extended Horizon)"
 
     # 5. Multi-Model Extended Horizon Ensemble Comparison
     if is_cyclone_active:
