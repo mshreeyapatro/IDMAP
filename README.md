@@ -156,11 +156,14 @@ The assistant is part of IDMAP's existing FastAPI service and dashboard. After
 the normal project setup, `npm run dev` (or `npm start`) still launches the
 backend and frontend together on ports 8000 and 5173.
 
-For the assistant's retrieval index, set `GEMINI_API_KEY` and `DATABASE_URL`
-in the root `.env`. These can use the same Neon database as the main project;
-`DIRECT_URL` is used for schema setup and document ingestion. Install the
-project dependencies once with `npm run install:all`, then initialize and index
-the project knowledge files:
+For the assistant's retrieval index, set Gemini and database credentials in the
+root `.env`. By default it reuses the main IDMAP variables `GEMINI_API_KEY`,
+`DATABASE_URL`, and `DIRECT_URL`. To keep separate keys or a separate database,
+set `ASSISTANT_GEMINI_API_KEY`, `ASSISTANT_DATABASE_URL`, and
+`ASSISTANT_DIRECT_URL`; blank assistant-specific values fall back to the main
+IDMAP values. `ASSISTANT_DIRECT_URL` should be a direct/non-pooled URL when the
+assistant uses a separate database. Install the project dependencies once with
+`npm run install:all`, then initialize and index the project knowledge files:
 
 ```sh
 npm run assistant:db:init

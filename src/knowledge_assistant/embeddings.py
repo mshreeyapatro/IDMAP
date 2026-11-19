@@ -10,7 +10,7 @@ def client():
     global _client
     if _client is None:
         if not config.GEMINI_API_KEY:
-            raise RuntimeError("GEMINI_API_KEY is not set (see .env.example)")
+            raise RuntimeError("GEMINI_API_KEY or ASSISTANT_GEMINI_API_KEY is not set (see .env.example)")
         _client = genai.Client(api_key=config.GEMINI_API_KEY)
     return _client
 

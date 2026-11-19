@@ -4,9 +4,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "")
-DATABASE_URL_DIRECT = os.getenv("DATABASE_URL_DIRECT", "") or os.getenv("DIRECT_URL", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+# The integrated assistant can use its own credentials. If those are omitted,
+# it falls back to the existing IDMAP credentials for a one-database setup.
+ASSISTANT_DATABASE_URL = os.getenv("ASSISTANT_DATABASE_URL", "")
+DATABASE_URL = ASSISTANT_DATABASE_URL or os.getenv("DATABASE_URL", "")
+DATABASE_URL_DIRECT = (
+    os.getenv("ASSISTANT_DIRECT_URL", "")
+    or os.getenv("DATABASE_URL_DIRECT", "")
+    or (os.getenv("DIRECT_URL", "") if not ASSISTANT_DATABASE_URL else "")
+)
+GEMINI_API_KEY = os.getenv("ASSISTANT_GEMINI_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
 GEN_MODEL = os.getenv("GEN_MODEL", "gemini-3.1-flash-lite")
 GEN_FALLBACKS = [m.strip() for m in os.getenv("GEN_FALLBACKS", "gemini-3-flash-preview,gemini-2.5-flash").split(",") if m.strip()]
 ASSISTANT_NAME = os.getenv("ASSISTANT_NAME", "IDMAP Assistant")
