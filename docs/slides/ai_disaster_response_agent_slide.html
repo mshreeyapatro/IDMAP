@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Disaster Response Agent Slide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body { background: white !important; -webkit-print-color-adjust: exact; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased p-4 sm:p-6 flex items-center justify-center min-h-screen font-sans">
+
+  <!-- 16:9 Presentation Slide Container -->
+  <div class="w-full max-w-6xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+    
+    <!-- Decorative background glow -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header Section -->
+    <div class="border-b border-slate-800 pb-5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            IDMAP AI MODULE
+          </span>
+          <span class="text-xs text-slate-400 font-medium">B.Tech Project Presentation | 7th Sem</span>
+        </div>
+        <div class="text-xs font-mono text-slate-400">
+          Domain: Disaster Intelligence & Tactical RAG
+        </div>
+      </div>
+      
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <span>🤖</span>
+        <span>AI Disaster Response & Advisory Agent</span>
+      </h1>
+      <p class="text-slate-400 text-sm mt-1">
+        Evidence-Grounded Tactical Decision Support via Retrieval-Augmented Generation (RAG)
+      </p>
+    </div>
+
+    <!-- Main Content: 3 Technical Columns -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 my-6">
+      
+      <!-- Card 1: Problem & Mission -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 text-rose-400 font-bold text-sm mb-2">
+            <span>⚠️</span> The Operational Challenge
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Generic LLMs (like standard ChatGPT) hallucinate inaccurate protocols and lack institutional accountability during cyclone emergencies.
+          </p>
+          
+          <div class="mt-4 pt-3 border-t border-slate-700/50">
+            <div class="text-xs font-semibold text-slate-200 mb-1">Our Engineering Solution:</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A specialized tactical agent that binds <span class="text-emerald-300 font-medium">real-time numerical predictions</span> directly to <span class="text-blue-300 font-medium">legal SOP manuals</span>.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/40">
+          <span class="text-[11px] text-slate-400 font-semibold block">Primary Beneficiaries:</span>
+          <span class="text-xs text-slate-200">State EOC, District Collectors, NDRF/ODRAF Command</span>
+        </div>
+      </div>
+
+      <!-- Card 2: 3-Step RAG Architecture -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 text-cyan-400 font-bold text-sm mb-2">
+            <span>⚙️</span> RAG Pipeline Architecture
+          </div>
+          
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+              <div>
+                <strong class="text-slate-100">Vector Knowledge Index:</strong>
+                <p class="text-slate-400 text-[11px]">Chroma DB indexes official IMD SOPs, OSDMA manuals, and NDMA guidelines with 384-D embeddings (<code class="text-cyan-300">all-MiniLM-L6-v2</code>).</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+              <div>
+                <strong class="text-slate-100">Dynamic Context Binding:</strong>
+                <p class="text-slate-400 text-[11px]">Injects live eye coordinates, wind velocity, landfall ETA, evacuation quotas, and shelter limits.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2">
+              <span class="w-5 h-5 rounded-full bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+              <div>
+                <strong class="text-slate-100">Traceable Generation:</strong>
+                <p class="text-slate-400 text-[11px]">Synthesizes tactical directives where every sentence is anchored by exact SOP chapter and page citations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/40 text-center">
+          <span class="text-xs text-emerald-400 font-semibold font-mono">Zero Unanchored Hallucination</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Key Features & Lifecyle -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm mb-2">
+            <span>🛡️</span> Key Differentiators
+          </div>
+          
+          <ul class="space-y-2.5 text-xs text-slate-300">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 mt-0.5 font-bold">✓</span>
+              <div>
+                <strong class="text-slate-100">Deterministic Guardrails:</strong>
+                <span class="text-slate-400 block text-[11px]">Strict system prompts reject arbitrary suggestions outside government disaster doctrine.</span>
+              </div>
+            </li>
+            
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 mt-0.5 font-bold">✓</span>
+              <div>
+                <strong class="text-slate-100">Closed-Loop SFT / DPO Alignment:</strong>
+                <span class="text-slate-400 block text-[11px]">Captures operator ratings (1–5) and edits into JSONL datasets for automated continuous model retraining.</span>
+              </div>
+            </li>
+
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 mt-0.5 font-bold">✓</span>
+              <div>
+                <strong class="text-slate-100">1-Click Executive PDF:</strong>
+                <span class="text-slate-400 block text-[11px]">Exports complete statewide emergency orders with zero manual data re-entry.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mt-4 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/40">
+          <span class="text-[11px] text-slate-400 font-semibold block">Retraining Triggers:</span>
+          <span class="text-xs text-amber-300 font-mono">XGBoost R² &lt; 0.95 | CAE MSE &gt; 0.070</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Box: Real Output Example -->
+    <div class="bg-slate-950/80 border border-emerald-500/30 rounded-xl p-4 relative">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Agent Tactical Advisory Output Example</span>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400">Sector: Kendrapara / Bhadrak (Dhamra Corridor)</span>
+      </div>
+
+      <div class="text-xs text-slate-200 font-mono leading-relaxed bg-slate-900/90 p-3 rounded-lg border border-slate-800">
+        <span class="text-amber-400 font-bold">[ACTION DIRECTIVE]</span> Landfall projected in <span class="text-white font-bold">T+26h (Peak Wind: 81 kt)</span>. Issue <span class="text-amber-300 font-semibold">Orange Cyclone Warning</span> under <span class="text-cyan-300 underline underline-offset-2">IMD SOP-2021 (Sec 4.2)</span>.<br>
+        <span class="text-emerald-400 font-bold">[EVACUATION ORDER]</span> Evacuate <span class="text-white font-bold">48,200 residents</span> from kutcha dwellings within 5 km of shoreline to designated Multipurpose Cyclone Shelters (<span class="text-cyan-300 underline underline-offset-2">OSDMA Protocol Sec 7.1</span>).<br>
+        <span class="text-blue-400 font-bold">[RESCUE ALLOCATION]</span> Pre-position <span class="text-white font-bold">4 ODRAF/NDRF platoons</span> equipped with satellite transceivers and motorized inflatable boats at Dhamra and Chandbali block HQs.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between pt-4 mt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
+      <div>IDMAP | Intelligent Disaster Mapping & Advisory Platform</div>
+      <div>Department of CSE, Parala Maharaja Engineering College</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
+

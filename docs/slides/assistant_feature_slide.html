@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Conversational Knowledge Assistant Slide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body { background: white !important; -webkit-print-color-adjust: exact; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased p-4 sm:p-6 flex items-center justify-center min-h-screen font-sans">
+
+  <!-- 16:9 Slide Container -->
+  <div class="w-full max-w-6xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+    
+    <!-- Background Glows -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header Section -->
+    <div class="border-b border-slate-800 pb-4">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            IDMAP FEATURE SHOWCASE
+          </span>
+          <span class="text-xs text-slate-400 font-medium">B.Tech Project Presentation | 7th Sem</span>
+        </div>
+        <div class="text-xs font-mono text-cyan-400">
+          Module: Conversational RAG & Decision Intelligence
+        </div>
+      </div>
+      
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <span>💬</span>
+        <span>Interactive Disaster Intelligence Assistant</span>
+      </h1>
+      <p class="text-slate-400 text-sm mt-1">
+        Multi-Turn, Evidence-Grounded Conversational Agent Powered by Chroma Vector RAG &amp; Real-Time Telemetry
+      </p>
+    </div>
+
+    <!-- Main Two-Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-5">
+      
+      <!-- Left Column: Technical Highlights (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+        
+        <!-- Feature 1 -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5">
+          <div class="flex items-center gap-2 text-cyan-400 font-bold text-xs mb-1">
+            <span>📚</span> Hybrid RAG Knowledge Retrieval
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Indexes official <strong class="text-white">IMD Cyclone SOPs (2021)</strong>, <strong class="text-white">OSDMA Shelter Manuals</strong>, and <strong class="text-white">NDMA Evacuation Guidelines</strong> using Chroma vector store (384-D dense embeddings).
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
+            <span>🔄</span> Real-Time Multi-Modal Grounding
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Fuses live coastal AWS weather feeds (wind speed, barometric pressure) and active storm coordinates directly into the context window to prevent outdated guidance.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-xs mb-1">
+            <span>🛡️</span> Zero-Hallucination &amp; Traceable Citations
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Every operational directive displays exact source tags (e.g., <code class="text-amber-300 font-mono text-[11px]">[1]</code>, <code class="text-amber-300 font-mono text-[11px]">13 sources used</code>) with fallback alerts when live telemetry is inactive.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5">
+          <div class="flex items-center gap-2 text-purple-400 font-bold text-xs mb-1">
+            <span>👥</span> Human-in-the-Loop Feedback (DPO / SFT)
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Integrated <span class="text-emerald-400 font-semibold">Helpful ✓</span> / <span class="text-rose-400 font-semibold">Not Helpful</span> operator ratings feed automated JSONL export pipelines for continuous model alignment.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Actual Live UI Mockup (7 cols) -->
+      <div class="lg:col-span-7 bg-slate-950/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-inner">
+        
+        <!-- Mockup Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <span class="text-xs font-bold text-white uppercase tracking-wider">Live System UI: Assistant View</span>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">Multi-Turn Context Active</span>
+        </div>
+
+        <!-- Preset Chips -->
+        <div class="flex flex-wrap gap-1.5 my-3">
+          <span class="px-2 py-1 rounded-full text-[11px] bg-slate-800/90 text-slate-300 border border-slate-700">What are the evacuation rules for Ganjam?</span>
+          <span class="px-2 py-1 rounded-full text-[11px] bg-slate-800/90 text-slate-300 border border-slate-700">What does a red alert mean?</span>
+          <span class="px-2 py-1 rounded-full text-[11px] bg-slate-800/90 text-slate-300 border border-slate-700">Are there current warnings for Odisha?</span>
+        </div>
+
+        <!-- User Bubble -->
+        <div class="bg-slate-800/70 text-white text-xs font-medium px-3.5 py-2 rounded-lg self-end max-w-sm mb-3 border border-slate-700">
+          what is the cyclone risk now
+        </div>
+
+        <!-- Assistant Bubble -->
+        <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-lg p-3.5 space-y-2 leading-relaxed">
+          <p class="text-slate-400 text-[11px]">
+            Current official IMD or OSDMA bulletin status for an active cyclone cannot be verified from available real-time telemetry.
+          </p>
+          <ul class="space-y-1.5 list-disc pl-4 text-[11px] text-slate-300">
+            <li>Odisha's coastal belt—including <strong class="text-white">Jagatsinghpur, Kendrapara, Bhadrak, Balasore, and Puri</strong>—is classified as an extremely high-risk zone for storm surges &gt; 5 meters <span class="text-cyan-400">[1]</span>.</li>
+            <li><strong class="text-white">Ganjam and Khordha</strong> coastal tracts face high risk with storm surges between 2.5 and 5 meters <span class="text-cyan-400">[1]</span>.</li>
+            <li>Inland districts face moderate risks of high winds and heavy rainfall <span class="text-cyan-400">[1]</span>.</li>
+          </ul>
+
+          <div class="bg-emerald-950/40 border-l-2 border-emerald-500 p-2 text-[11px] text-emerald-200 rounded-r">
+            Follow official updates directly from IMD and OSDMA for any active alerts.
+          </div>
+
+          <!-- Metadata & Tags Row -->
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400 font-semibold font-mono">► 13 sources used</span>
+              <span class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/50 font-mono">GEMINI + RAG + WEB</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-slate-400">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-emerald-400 cursor-pointer">helpful ✓</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-rose-400 cursor-pointer">not helpful</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Mockup -->
+        <div class="mt-3 flex gap-2">
+          <div class="flex-1 bg-slate-900 border border-slate-700/70 rounded-lg px-3 py-1.5 text-[11px] text-slate-400 flex items-center">
+            Ask about cyclone procedures, districts, or past events...
+          </div>
+          <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition-colors">
+            Ask
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Slide Footer -->
+    <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+      <div>IDMAP | Intelligent Disaster Mapping &amp; Advisory Platform</div>
+      <div>Parala Maharaja Engineering College, Berhampur (BPUT)</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
+

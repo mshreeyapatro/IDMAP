@@ -51,7 +51,7 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
     anomaly_error = float(sat_vision.get("anomaly_reconstruction_error", 0.042))
     is_anomaly = anomaly_error > 0.08
 
-    is_live_calm = (mode == "live") and (base_wind < 17.0) and (tcir_vmax < 17.0) and (min_pressure > 1008.0)
+    is_live_calm = (mode == "live") and (base_wind < 17.0) and (tcir_vmax < 17.0) and (min_pressure >= 1000.0)
 
     eye_lat0 = float(sat_vision.get("eye_latitude", 17.8))
     eye_lon0 = float(sat_vision.get("eye_longitude", 86.1))
@@ -72,30 +72,68 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         peak_core_source = max(base_wind, tcir_vmax)
         peak_landfall_wind_kt = round(peak_core_source, 1)
         min_landfall_pressure_hpa = round(min_pressure, 1)
-        if peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0:
-            state_severity = "Deep Depression"
+        operational_mode = "live"
+        if peak_landfall_wind_kt >= 64.0 or min_landfall_pressure_hpa <= 980.0:
+            state_severity = "Very Severe Cyclonic Storm (VSCS)"
+            warning_stage = "🔴 Very Severe Cyclonic Storm (VSCS) Warning"
+            resource_sev = "High"
+            operational_mode_title = "🔴 Live Tracking: Very Severe Cyclonic Storm (VSCS)"
+            operational_mode_badge = "LIVE REAL-TIME (VSCS)"
+        elif peak_landfall_wind_kt >= 48.0 or min_landfall_pressure_hpa <= 992.0:
+            state_severity = "Severe Cyclonic Storm (SCS)"
+            warning_stage = "🔴 Severe Cyclonic Storm (SCS) Warning"
+            resource_sev = "High"
+            operational_mode_title = "🔴 Live Tracking: Severe Cyclonic Storm (SCS)"
+            operational_mode_badge = "LIVE REAL-TIME (SCS)"
+        elif peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0:
+            state_severity = "Cyclonic Storm (CS)"
+            warning_stage = "🟠 Cyclonic Storm (CS) Coastal Warning"
             resource_sev = "Moderate"
+            operational_mode_title = "🟠 Live Tracking: Cyclonic Storm (CS)"
+            operational_mode_badge = "LIVE REAL-TIME (CYCLONIC STORM)"
         elif peak_landfall_wind_kt >= 28.0 or min_landfall_pressure_hpa <= 1004.0:
-            state_severity = "Depression"
+            state_severity = "Deep Depression (DD)"
+            warning_stage = "🟡 Deep Depression (DD) Coastal Warning"
             resource_sev = "Moderate"
+            operational_mode_title = "🟡 Live Tracking: Deep Depression (DD)"
+            operational_mode_badge = "LIVE REAL-TIME (DEEP DEPRESSION)"
         elif peak_landfall_wind_kt >= 17.0 or min_landfall_pressure_hpa <= 1008.0:
-            state_severity = "Well-Marked Low"
+            state_severity = "Depression / Well-Marked Low"
+            warning_stage = "🟡 IMD Depression (D) / Well-Marked Low Watch"
             resource_sev = "Low"
+            operational_mode_title = "🟡 Live Tracking: Depression / Well-Marked Low"
+            operational_mode_badge = "LIVE REAL-TIME (DEPRESSION/WML)"
         else:
-            state_severity = "Low Pressure Area"
+            state_severity = "Low Pressure Area (LPA)"
+            warning_stage = "🟢 Low Pressure Area (LPA) Monitoring"
             resource_sev = "Low"
+            operational_mode_title = "🟢 Live Tracking: Low Pressure Area (LPA)"
+            operational_mode_badge = "LIVE REAL-TIME (LOW PRESSURE)"
+
+        operational_mode_banner = f"⚠️ ACTIVE SYSTEM IN BAY OF BENGAL: {state_severity} detected in maritime domain (Peak Wind: {peak_landfall_wind_kt} kt, Minimum Central Pressure: {min_landfall_pressure_hpa} hPa). Autonomous trajectory and coastal threat engine actively tracking system."
         resource_data = resource_planner.get_resource_plan(severity_level=resource_sev, wind_speed_kt=peak_landfall_wind_kt)
     elif is_live_calm:
         peak_core_source = max(base_wind, tcir_vmax, 12.0)
         peak_landfall_wind_kt = round(peak_core_source, 1)
         min_landfall_pressure_hpa = round(min_pressure, 1)
         state_severity = "Normal / Monitoring"
+        warning_stage = "🟢 Normal / Non-Cyclone Conditions"
+        operational_mode = "live"
+        operational_mode_title = "🟢 Live Real-Time Ingest (Calm Sea State)"
+        operational_mode_badge = "LIVE REAL-TIME (CALM SEA)"
+        operational_mode_banner = "Current Bay of Bengal domain is CALM. No active Depression or Cyclone detected by IMD / MOSDAC. Routine telemetry streaming at safe baseline levels."
         resource_data = resource_planner.get_resource_plan(severity_level="Normal", wind_speed_kt=peak_landfall_wind_kt)
     else:
+        # Benchmark Severe Storm Simulation Drill
         peak_core_source = max(base_wind, tcir_vmax, 75.0)
         density_multiplier = 1.05 + 0.10 * cloud_density
         peak_landfall_wind_kt = round(peak_core_source * density_multiplier, 1)
         min_landfall_pressure_hpa = round(min(min_pressure - 28.0, 966.0), 1)
+        warning_stage = "🔴 Very Severe Cyclonic Storm (VSCS) Warning"
+        operational_mode = "simulated"
+        operational_mode_title = "🔴 Cyclone Preparedness Drill (VSCS Ganjam Benchmark)"
+        operational_mode_badge = "PREPAREDNESS DRILL (SIMULATION)"
+        operational_mode_banner = "🎯 SIMULATION DRILL ACTIVE: Demonstrating Category VSCS landfall response protocols, shelter allocations, and 48-hour Rankine vortex decay for Odisha State Disaster Management Authority."
         resource_data = resource_planner.get_resource_plan(severity_level=state_severity, wind_speed_kt=peak_landfall_wind_kt)
 
     district_list = resource_data.get("district_breakdown", [])
@@ -135,7 +173,12 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         "Dhenkanal": "Bhubaneswar",
     }
 
-    if is_live_calm:
+    if mode == "simulated":
+        is_cyclone_active = True
+    else:
+        is_cyclone_active = (peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0)
+
+    if not is_cyclone_active:
         primary_landfall_target = "No Coastal Strike"
         landfall_sector = "Normal Marine Conditions"
         estimated_landfall_ist = "No Active Landfall Threat"
@@ -156,7 +199,7 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         landfall_dt_ist = landfall_dt_utc + timedelta(hours=5, minutes=30)
         estimated_landfall_ist = landfall_dt_ist.strftime("%d %b, %I:%M %p IST")
         estimated_landfall_utc = landfall_dt_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-        v_initial_core = max(65.0, peak_landfall_wind_kt * 0.88)
+        v_initial_core = max(65.0, peak_landfall_wind_kt * 0.88) if mode == "simulated" else peak_landfall_wind_kt * 0.88
 
     # Model 4 & 5: Compute Live SHAP & XGBoost Risk for each district using superposed Rankine Vortex
     survey_matrix = []
@@ -180,13 +223,17 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         quadrant_sector = predictive_engine.get_quadrant_sector(bearing_deg, heading_deg)
 
         if is_live_calm:
-            dist_wind = max(4.0, min(14.0, st_wind * (1.0 - coastal_dist / 300.0)))
+            dist_wind = round(max(4.0, min(14.0, st_wind * (1.0 - coastal_dist / 300.0))), 1)
             dist_pressure = min_pressure
             surge_m = 0.1
             surge_pill = "🟢 Normal Tide (<0.8m)"
-            rain_mm = 5.0
+            st_precip = float(st_info.get("precipitation_mm", 0.0))
+            rain_mm = round(max(0.5, min(25.0, st_precip + max(0.0, 4.0 * (1.0 - coastal_dist / 250.0)))), 1)
             rain_cat = "Normal Rain (<15mm)"
-            dist_risk_score = 0.04
+            wind_factor = (dist_wind / 64.0) * 0.06
+            coastal_factor = max(0.0, (1.0 - coastal_dist / 300.0)) * 0.05
+            rain_factor = min(0.02, (rain_mm / 100.0))
+            dist_risk_score = round(max(0.025, min(0.14, 0.03 + wind_factor + coastal_factor + rain_factor)), 3)
             alert_pill = "🟢 NORMAL / LOW RISK"
             sop_directive = f"Standard peacetime observation active in {dist_name}."
             people_evac = 0
@@ -366,7 +413,7 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         "operational_mode_title": operational_mode_title,
         "operational_mode_badge": operational_mode_badge,
         "operational_mode_banner": operational_mode_banner,
-        "is_cyclone_active": not is_live_calm
+        "is_cyclone_active": is_cyclone_active
     }
 
     return {
@@ -386,7 +433,7 @@ def generate_unified_live_survey(mode: str = "simulated") -> dict:
         "operational_mode_title": operational_mode_title,
         "operational_mode_badge": operational_mode_badge,
         "operational_mode_banner": operational_mode_banner,
-        "is_cyclone_active": not is_live_calm,
+        "is_cyclone_active": is_cyclone_active,
         "total_state_evacuation_target": total_evac,
         "total_shelters_activated": total_shelters,
         "total_ndrf_teams_deployed": total_ndrf,

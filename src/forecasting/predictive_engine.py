@@ -939,28 +939,38 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
     tcir_vmax = float(sat_vision.get("tcir_vmax_proxy_kt", 0.0))
     satellite_anomaly_error = float(sat_vision.get("anomaly_reconstruction_error", 0.042))
 
-    is_live_calm = (mode == "live") and (base_wind < 17.0) and (tcir_vmax < 17.0) and (base_pressure > 1008.0)
+    is_live_calm = (mode == "live") and (base_wind < 17.0) and (tcir_vmax < 17.0) and (base_pressure >= 1000.0)
 
     if mode == "live" and not is_live_calm:
         peak_core_source = max(base_wind, tcir_vmax)
         peak_landfall_wind_kt = round(peak_core_source, 1)
         min_landfall_pressure_hpa = round(base_pressure, 1)
         operational_mode = "live"
-        if peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0:
-            warning_stage = "🟠 Deep Depression (DD) Coastal Warning"
-            state_severity = "Deep Depression"
-            operational_mode_title = "🟠 Live Tracking: Deep Depression (DD)"
-            operational_mode_badge = "LIVE REAL-TIME (DEEP DEPRESSION)"
+        if peak_landfall_wind_kt >= 64.0 or min_landfall_pressure_hpa <= 980.0:
+            warning_stage = "🔴 Very Severe Cyclonic Storm (VSCS) Warning"
+            state_severity = "Very Severe Cyclonic Storm"
+            operational_mode_title = "🔴 Live Tracking: Very Severe Cyclonic Storm (VSCS)"
+            operational_mode_badge = "LIVE REAL-TIME (VSCS)"
+        elif peak_landfall_wind_kt >= 48.0 or min_landfall_pressure_hpa <= 992.0:
+            warning_stage = "🔴 Severe Cyclonic Storm (SCS) Warning"
+            state_severity = "Severe Cyclonic Storm"
+            operational_mode_title = "🔴 Live Tracking: Severe Cyclonic Storm (SCS)"
+            operational_mode_badge = "LIVE REAL-TIME (SCS)"
+        elif peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0:
+            warning_stage = "🟠 Cyclonic Storm (CS) Coastal Warning"
+            state_severity = "Cyclonic Storm"
+            operational_mode_title = "🟠 Live Tracking: Cyclonic Storm (CS)"
+            operational_mode_badge = "LIVE REAL-TIME (CYCLONIC STORM)"
         elif peak_landfall_wind_kt >= 28.0 or min_landfall_pressure_hpa <= 1004.0:
-            warning_stage = "🟡 IMD Depression (D) Alert"
-            state_severity = "Depression"
-            operational_mode_title = "🟡 Live Tracking: IMD Depression (D)"
-            operational_mode_badge = "LIVE REAL-TIME (DEPRESSION)"
+            warning_stage = "🟡 Deep Depression (DD) Coastal Warning"
+            state_severity = "Deep Depression"
+            operational_mode_title = "🟡 Live Tracking: Deep Depression (DD)"
+            operational_mode_badge = "LIVE REAL-TIME (DEEP DEPRESSION)"
         elif peak_landfall_wind_kt >= 17.0 or min_landfall_pressure_hpa <= 1008.0:
-            warning_stage = "🟡 Well-Marked Low Pressure Area (WML) Watch"
-            state_severity = "Well-Marked Low"
-            operational_mode_title = "🟡 Live Tracking: Well-Marked Low (WML)"
-            operational_mode_badge = "LIVE REAL-TIME (WELL-MARKED LOW)"
+            warning_stage = "🟡 IMD Depression (D) / Well-Marked Low Watch"
+            state_severity = "Depression / Low Pressure"
+            operational_mode_title = "🟡 Live Tracking: Depression / Well-Marked Low"
+            operational_mode_badge = "LIVE REAL-TIME (DEPRESSION/WML)"
         else:
             warning_stage = "🟢 Low Pressure Area (LPA) Monitoring"
             state_severity = "Low Pressure Area"
@@ -990,6 +1000,12 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         operational_mode_badge = "PREPAREDNESS DRILL (SIMULATION)"
         operational_mode_banner = "🎯 SIMULATION DRILL ACTIVE: Demonstrating Category VSCS landfall response protocols, shelter allocations, and 48-hour Rankine vortex decay for Odisha State Disaster Management Authority."
 
+    # Determine whether an actual severe cyclonic circulation is active
+    if mode == "simulated":
+        is_cyclone_active = True
+    else:
+        is_cyclone_active = (peak_landfall_wind_kt >= 34.0 or min_landfall_pressure_hpa <= 998.0)
+
     # Initial Eye Centroid coordinates and Steering Vector from Satellite Vision Telemetry
     lat0 = float(sat_vision.get("eye_latitude", 17.8))
     lon0 = float(sat_vision.get("eye_longitude", 86.1))
@@ -1015,7 +1031,7 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         peak_landfall_wind_kt = ocean_cold_wake.get("capped_vmax_kt", peak_landfall_wind_kt)
 
     # 3. Dynamic Landfall ETA & Target District from Trajectory-Coastline Intersection
-    if is_live_calm:
+    if not is_cyclone_active:
         landfall_target_district = "No Coastal Strike"
         landfall_sector = "Normal Sea State (No Threat)"
         estimated_etl_hours = 0.0
@@ -1044,17 +1060,20 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         landfall_forward_eyewall_ist = window_start_dt_ist.strftime("%d %b, %I:%M %p IST")
         landfall_rear_eyewall_ist = window_end_dt_ist.strftime("%d %b, %I:%M %p IST")
 
-    v_initial_core = max(65.0, peak_landfall_wind_kt * 0.88) if not is_live_calm else peak_landfall_wind_kt
+    if mode == "simulated":
+        v_initial_core = max(65.0, peak_landfall_wind_kt * 0.88)
+    else:
+        v_initial_core = peak_landfall_wind_kt * 0.88 if is_cyclone_active else peak_landfall_wind_kt
     timeline_matrix = []
 
     # Compute Rapid Intensification Watch Index with 3D NWP Vertical Wind Shear
     vws_nwp = float(steering_flow.get("vertical_wind_shear_kt", 9.5)) if steering_flow else 9.5
     ri_watch = compute_rapid_intensification_index(
         sst_c=ocean_cold_wake.get("sst_effective_c", 30.5),
-        cloud_density_score=cloud_density if not is_live_calm else 0.15,
+        cloud_density_score=cloud_density if is_cyclone_active else 0.15,
         anomaly_recon_error=satellite_anomaly_error,
         vertical_wind_shear_kt=vws_nwp,
-        is_live_calm=is_live_calm
+        is_live_calm=not is_cyclone_active
     )
 
     for h in horizons:
@@ -1063,7 +1082,10 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         step_time_str = step_dt_ist.strftime("%d %b %H:%M IST")
 
         # Operational Cyclone Lifecycle State for Horizon h
-        if h < (estimated_etl_hours - 2.5):
+        if not is_cyclone_active:
+            lifecycle_phase = "🟢 Normal Marine Domain (Bay of Bengal Basin Clear)"
+            lifecycle_code = "normal_conditions"
+        elif h < (estimated_etl_hours - 2.5):
             lifecycle_phase = "🌊 Approaching Coast (Pre-Landfall Inundation)"
             lifecycle_code = "approaching"
         elif (estimated_etl_hours - 2.5) <= h < estimated_etl_hours:
@@ -1093,7 +1115,7 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         cone_radius_km = round(3.0 * (h ** 1.02), 1) if h > 0 else 0.0
 
         # 2. Core Vortex Wind Vmax(h) & Central Pressure at Horizon h
-        if is_live_calm:
+        if not is_cyclone_active:
             vmax_h = peak_landfall_wind_kt
             p_central_h = base_pressure
         elif h <= estimated_etl_hours:
@@ -1124,23 +1146,28 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
             d_lon = float(row.get("centroid_lon", 85.5)) if pd.notna(row.get("centroid_lon")) else 85.5
 
             # Component 2: Haversine Distance to Moving Eye d_eye(h, D)
-            d_eye = haversine_distance(lat_eye, lon_eye, d_lat, d_lon)
-            bearing_deg = compute_bearing_deg(lat_eye, lon_eye, d_lat, d_lon)
-            quadrant_sector = get_quadrant_sector(bearing_deg, curr_heading)
+            d_eye = haversine_distance(lat_eye, lon_eye, d_lat, d_lon) if is_cyclone_active else None
+            bearing_deg = compute_bearing_deg(lat_eye, lon_eye, d_lat, d_lon) if is_cyclone_active else 0.0
+            quadrant_sector = get_quadrant_sector(bearing_deg, curr_heading) if is_cyclone_active else "Normal Maritime"
 
             # Station-specific baseline
             assigned_station = DISTRICT_STATION_MAP.get(d_name, "Gopalpur")
             st_info = station_telemetry.get(assigned_station, {"wind_speed_kt": base_wind, "pressure_hpa": base_pressure})
             st_wind = st_info.get("wind_speed_kt", base_wind)
 
-            if is_live_calm:
+            if not is_cyclone_active:
                 dist_wind = round(max(4.0, min(14.0, st_wind * (1.0 - c_dist / 300.0))), 1)
                 dist_pressure = base_pressure
                 surge_m = 0.1
                 surge_pill = "🟢 Normal Tide (<0.8m)"
-                rainfall_mm = 4.5
+                st_precip = float(st_info.get("precipitation_mm", 0.0))
+                rainfall_mm = round(max(0.5, min(25.0, st_precip + max(0.0, 4.0 * (1.0 - c_dist / 250.0)))), 1)
                 rainfall_cat = "Normal Rain (<15mm)"
-                risk_score = 0.04
+                # Ambient multi-factor risk score reflecting coastal exposure, local station wind, and rainfall
+                wind_factor = (dist_wind / 64.0) * 0.06
+                coastal_factor = max(0.0, (1.0 - c_dist / 300.0)) * 0.05
+                rain_factor = min(0.02, (rainfall_mm / 100.0))
+                risk_score = round(max(0.025, min(0.14, 0.03 + wind_factor + coastal_factor + rain_factor)), 3)
                 status_pill = "🟢 NORMAL / LOW RISK"
                 people_evac = 0
                 shelters_req = 0
@@ -1232,8 +1259,8 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
             district_forecasts.append({
                 "district": d_name,
                 "coastal_distance_km": round(c_dist, 1),
-                "distance_to_storm_center_km": round(d_eye, 1),
-                "distance_to_eye_km": round(d_eye, 1),
+                "distance_to_storm_center_km": round(d_eye, 1) if d_eye is not None else None,
+                "distance_to_eye_km": round(d_eye, 1) if d_eye is not None else None,
                 "bearing_deg": bearing_deg,
                 "quadrant_sector": quadrant_sector,
                 "predicted_risk_score": risk_score,
@@ -1316,11 +1343,11 @@ def generate_48h_short_range_forecast(mode: str = "simulated") -> dict:
         "operational_mode_title": operational_mode_title,
         "operational_mode_badge": operational_mode_badge,
         "operational_mode_banner": operational_mode_banner,
-        "is_cyclone_active": not is_live_calm,
+        "is_cyclone_active": is_cyclone_active,
         "warning_stage": warning_stage,
         "generated_at": now_dt.isoformat() + "Z",
         "state_severity": state_severity,
-        "is_active_cyclone_warning": not is_live_calm,
+        "is_active_cyclone_warning": is_cyclone_active,
         "rapid_intensification_watch": ri_watch,
         "ocean_cold_wake_dynamics": ocean_cold_wake,
         "nwp_environmental_steering": steering_flow,
@@ -1817,13 +1844,13 @@ def generate_15day_extended_forecast(mode: str = "simulated") -> dict:
                 tier_color = "#059669"
 
         else:
-            # Ambient Peacetime Regime (No fake storm!)
-            eye_lat = round(15.0 + math.sin(day_num * 0.4) * 1.5, 2)
-            eye_lon = round(88.0 + math.cos(day_num * 0.4) * 2.0, 2)
+            # Ambient Peacetime Regime (Genuine calm: no active vortex)
+            eye_lat = None
+            eye_lon = None
             vmax_kt = round(10.0 + math.sin(day_num * 0.5) * 3.0, 1)
             vmax_kmh = round(vmax_kt * 1.852, 1)
             p_central = 1010.0
-            cone_km = min(600.0, 80.0 + day_num * 32.0)
+            cone_km = 0.0
             cat_desc = "Routine Marine Atmosphere (No Active Vortex)"
             phase = f"Day {day_num}: Subseasonal Synoptic Horizon Surveillance (Week {1 if day_num <= 7 else 2})"
             code = "ambient_routine"
@@ -1863,7 +1890,7 @@ def generate_15day_extended_forecast(mode: str = "simulated") -> dict:
             d_lat = float(row.get("centroid_lat", 20.0)) if pd.notna(row.get("centroid_lat")) else 20.0
             d_lon = float(row.get("centroid_lon", 85.5)) if pd.notna(row.get("centroid_lon")) else 85.5
 
-            d_eye = haversine_distance(eye_lat, eye_lon, d_lat, d_lon)
+            d_eye = haversine_distance(eye_lat, eye_lon, d_lat, d_lon) if (eye_lat is not None and eye_lon is not None) else None
 
             if is_cyclone_active:
                 if day_num <= landfall_day:
@@ -1944,7 +1971,7 @@ def generate_15day_extended_forecast(mode: str = "simulated") -> dict:
             district_matrix.append({
                 "district": d_name,
                 "coastal_distance_km": round(c_dist, 1),
-                "distance_to_storm_center_km": round(d_eye, 1),
+                "distance_to_storm_center_km": round(d_eye, 1) if d_eye is not None else None,
                 "projected_wind_kmh": dist_wind_kmh,
                 "projected_wind_kt": round(dist_wind_kmh / 1.852, 1),
                 "projected_rainfall_24h_mm": rain_mm,

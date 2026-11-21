@@ -420,7 +420,7 @@ def get_evaluation():
     whatever the most recent training run actually produced."""
     import torch
 
-    result = {"backbone": None, "autoencoder": None, "images": {}}
+    result = {"backbone": None, "autoencoder": None, "risk_model": None, "ensemble": None, "images": {}}
 
     backbone_ckpt = ROOT / "src" / "cv_models" / "checkpoints" / "tcir_backbone.pt"
     if backbone_ckpt.exists():
@@ -443,12 +443,22 @@ def get_evaluation():
             "anomaly_percentile": ckpt.get("anomaly_percentile"),
         }
 
+    risk_path = REPORTS_DIR / "risk_model_metrics.json"
+    if risk_path.exists():
+        with open(risk_path, encoding="utf-8") as f:
+            result["risk_model"] = json.load(f)
+
+    ensemble_path = REPORTS_DIR / "tcir_ensemble_results.json"
+    if ensemble_path.exists():
+        with open(ensemble_path, encoding="utf-8") as f:
+            result["ensemble"] = json.load(f)
+
     history_path = REPORTS_DIR / "tcir_backbone_history.json"
     if history_path.exists():
         with open(history_path, encoding="utf-8") as f:
             result["training_history"] = json.load(f)
 
-    for name in ["tcir_backbone_training_curves.png", "embedding_space.png"]:
+    for name in ["tcir_backbone_training_curves.png", "embedding_space.png", "tcir_ensemble_comparison.png"]:
         result["images"][name] = (REPORTS_DIR / name).exists()
 
     return result
