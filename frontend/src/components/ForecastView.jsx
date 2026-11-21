@@ -646,8 +646,8 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
             </button>
 
             <button
-              onClick={() => { fetchUnifiedSurvey(true); fetchShortRange(true); }}
-              disabled={loadingSurvey || loadingShort}
+              onClick={() => { fetchUnifiedSurvey(true); fetchShortRange(true); fetchSeasonal(true); }}
+              disabled={loadingSurvey || loadingShort || loadingSeasonal}
               title="Trigger fresh ingestion from live Open-Meteo coastal telemetry stations and satellite feed"
               style={{
                 padding: '6px 12px',
@@ -1115,7 +1115,7 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                                 District {sortBy === 'name' ? (sortAsc ? '▲' : '▼') : ''}
                               </th>
                               <th style={{ padding: '9px 10px', textAlign: 'left' }} onClick={() => handleSort('dist')}>
-                                Eye Proximity (d_eye) {sortBy === 'dist' ? (sortAsc ? '▲' : '▼') : ''}
+                                {isCycloneActive ? 'Eye Proximity (d_eye)' : 'Proximity / Coast'} {sortBy === 'dist' ? (sortAsc ? '▲' : '▼') : ''}
                               </th>
                               <th style={{ padding: '9px 10px', textAlign: 'left' }} onClick={() => handleSort('wind')}>
                                 Rankine Wind V(r) {sortBy === 'wind' ? (sortAsc ? '▲' : '▼') : ''}
@@ -1174,8 +1174,8 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                                     </td>
                                     <td style={{ padding: '8px 10px' }}>
                                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <strong style={{ color: eyeDist <= 35 ? '#dc2626' : (eyeDist <= 100 ? '#d97706' : '#0284c7'), fontSize: '0.84rem' }}>
-                                          {eyeDist} km
+                                        <strong style={{ color: !isCycloneActive ? '#059669' : (eyeDist <= 35 ? '#dc2626' : (eyeDist <= 100 ? '#d97706' : '#0284c7')), fontSize: '0.84rem' }}>
+                                          {isCycloneActive && d.distance_to_eye_km != null ? `${eyeDist} km` : '—'}
                                         </strong>
                                         <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
                                           Coast: {coastDist} km
@@ -1384,25 +1384,35 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                       <div style={{ background: '#f8fafc', padding: '4px 6px', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
                         <span style={{ fontSize: '0.58rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>🧭 Vector</span>
                         <strong style={{ fontSize: '0.74rem', color: '#0f172a', display: 'block' }}>
-                          {telemetryMode === 'simulated' ? '315° NW' : '315° NW'}
+                          {shortRange?.satellite_telemetry?.vision_ai_telemetry?.heading_vector || summaryData?.heading_vector || '315° NW'}
                         </strong>
                       </div>
                       <div style={{ background: '#f8fafc', padding: '4px 6px', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
                         <span style={{ fontSize: '0.58rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>⚡ Speed</span>
                         <strong style={{ fontSize: '0.74rem', color: '#d97706', display: 'block' }}>
-                          {telemetryMode === 'simulated' ? '14.8 km/h' : '14.8 km/h'}
+                          {shortRange?.satellite_telemetry?.vision_ai_telemetry?.translation_speed_kmh
+                            ? `${shortRange.satellite_telemetry.vision_ai_telemetry.translation_speed_kmh} km/h`
+                            : (summaryData?.translation_speed_kmh ? `${summaryData.translation_speed_kmh} km/h` : '14.8 km/h')}
                         </strong>
                       </div>
                       <div style={{ background: '#f8fafc', padding: '4px 6px', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.58rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>👁️ Eye</span>
-                        <strong style={{ fontSize: '0.70rem', color: '#0284c7', display: 'block' }}>
-                          {telemetryMode === 'simulated' ? '17.8°N, 86.1°E' : `${summaryData.eye_coordinates?.lat || 15.0}°N, ${summaryData.eye_coordinates?.lon || 87.0}°E`}
+                        <span style={{ fontSize: '0.58rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>
+                          {isCycloneActive ? '👁️ Eye' : '🌊 Vortex'}
+                        </span>
+                        <strong style={{ fontSize: '0.70rem', color: isCycloneActive ? '#0284c7' : '#059669', display: 'block' }}>
+                          {isCycloneActive
+                            ? (shortRange?.satellite_telemetry?.vision_ai_telemetry?.eye_latitude
+                                ? `${shortRange.satellite_telemetry.vision_ai_telemetry.eye_latitude}°N, ${shortRange.satellite_telemetry.vision_ai_telemetry.eye_longitude}°E`
+                                : (summaryData?.eye_coordinates?.lat ? `${summaryData.eye_coordinates.lat}°N, ${summaryData.eye_coordinates.lon}°E` : '17.8°N, 86.1°E'))
+                            : 'No Eye (Calm)'}
                         </strong>
                       </div>
                       <div style={{ background: '#f8fafc', padding: '4px 6px', borderRadius: '5px', border: '1px solid #e2e8f0' }}>
                         <span style={{ fontSize: '0.58rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>🌀 Density</span>
                         <strong style={{ fontSize: '0.74rem', color: '#059669', display: 'block' }}>
-                          {telemetryMode === 'simulated' ? '0.88' : '0.43'}
+                          {shortRange?.satellite_telemetry?.vision_ai_telemetry?.cloud_wall_density_score != null
+                            ? String(shortRange.satellite_telemetry.vision_ai_telemetry.cloud_wall_density_score)
+                            : (summaryData?.convective_density_score != null ? String(summaryData.convective_density_score) : (telemetryMode === 'simulated' ? '0.88' : '0.33'))}
                         </strong>
                       </div>
                     </div>
@@ -2389,7 +2399,7 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                         <thead>
                           <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                             <th onClick={() => handle15DaySort('name')} className="sticky-col" style={{ padding: '8px 10px', cursor: 'pointer', minWidth: '130px' }}>District {sort15DayBy === 'name' ? (sort15DayAsc ? '▲' : '▼') : ''}</th>
-                            <th onClick={() => handle15DaySort('dist')} style={{ padding: '8px 10px', cursor: 'pointer' }}>Dist to Eye {sort15DayBy === 'dist' ? (sort15DayAsc ? '▲' : '▼') : ''}</th>
+                            <th onClick={() => handle15DaySort('dist')} style={{ padding: '8px 10px', cursor: 'pointer' }}>{seasonal?.is_cyclone_active ? 'Dist to Eye' : 'Dist to Coast'} {sort15DayBy === 'dist' ? (sort15DayAsc ? '▲' : '▼') : ''}</th>
                             <th onClick={() => handle15DaySort('wind')} style={{ padding: '8px 10px', cursor: 'pointer' }}>Wind (km/h) {sort15DayBy === 'wind' ? (sort15DayAsc ? '▲' : '▼') : ''}</th>
                             <th onClick={() => handle15DaySort('rain')} style={{ padding: '8px 10px', cursor: 'pointer' }}>24h Rain (mm) {sort15DayBy === 'rain' ? (sort15DayAsc ? '▲' : '▼') : ''}</th>
                             <th style={{ padding: '8px 10px' }}>Storm Surge</th>
@@ -2407,8 +2417,8 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                               return matchesSearch && matchesZone
                             })
                             .sort((a, b) => {
-                              let valA = a[sort15DayBy === 'name' ? 'district' : (sort15DayBy === 'dist' ? 'distance_to_storm_center_km' : (sort15DayBy === 'wind' ? 'projected_wind_kmh' : (sort15DayBy === 'rain' ? 'projected_rainfall_24h_mm' : (sort15DayBy === 'evac' ? 'evacuation_target' : 'risk_score'))))]
-                              let valB = b[sort15DayBy === 'name' ? 'district' : (sort15DayBy === 'dist' ? 'distance_to_storm_center_km' : (sort15DayBy === 'wind' ? 'projected_wind_kmh' : (sort15DayBy === 'rain' ? 'projected_rainfall_24h_mm' : (sort15DayBy === 'evac' ? 'evacuation_target' : 'risk_score'))))]
+                              let valA = sort15DayBy === 'name' ? a.district : (sort15DayBy === 'dist' ? (seasonal?.is_cyclone_active ? (a.distance_to_storm_center_km ?? 9999) : a.coastal_distance_km) : (sort15DayBy === 'wind' ? a.projected_wind_kmh : (sort15DayBy === 'rain' ? a.projected_rainfall_24h_mm : (sort15DayBy === 'evac' ? a.evacuation_target : a.risk_score))))
+                              let valB = sort15DayBy === 'name' ? b.district : (sort15DayBy === 'dist' ? (seasonal?.is_cyclone_active ? (b.distance_to_storm_center_km ?? 9999) : b.coastal_distance_km) : (sort15DayBy === 'wind' ? b.projected_wind_kmh : (sort15DayBy === 'rain' ? b.projected_rainfall_24h_mm : (sort15DayBy === 'evac' ? b.evacuation_target : b.risk_score))))
                               if (sort15DayAsc) return valA > valB ? 1 : -1
                               return valA < valB ? 1 : -1
                             })
@@ -2421,7 +2431,7 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                                   </span>
                                 </td>
                                 <td style={{ padding: '8px 10px', color: '#475569' }}>
-                                  {d.distance_to_storm_center_km} km
+                                  {seasonal?.is_cyclone_active ? (d.distance_to_storm_center_km != null ? `${d.distance_to_storm_center_km} km` : '—') : `${d.coastal_distance_km} km`}
                                 </td>
                                 <td style={{ padding: '8px 10px', fontWeight: 'bold', color: d.projected_wind_kmh >= 100 ? '#dc2626' : (d.projected_wind_kmh >= 60 ? '#d97706' : '#166534') }}>
                                   {d.projected_wind_kmh} km/h
@@ -2659,7 +2669,7 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                       Landfall Target & Window
                     </span>
                     <span style={{ fontSize: '0.66rem', background: '#ecfdf5', color: '#059669', padding: '1px 7px', borderRadius: '10px', fontWeight: '700' }}>
-                      88% Consensus
+                      {seasonal?.ensemble_confidence_pct || (seasonal?.is_cyclone_active ? 88 : 94)}% Consensus
                     </span>
                   </div>
 
@@ -2726,7 +2736,7 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0369a1', fontWeight: '800' }}>
-                        Vortex Dynamics & Eye
+                        {seasonal?.is_cyclone_active ? 'Vortex Dynamics & Eye' : 'Synoptic State & Ambient Watch'}
                       </span>
                       <span style={{ fontSize: '0.66rem', background: '#e0f2fe', color: '#0369a1', padding: '1px 8px', borderRadius: '10px', fontWeight: '700' }}>
                         Day {selected15DayIdx + 1} ({current15DayHorizon.short_weekday || ''})
@@ -2735,20 +2745,30 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                       <div style={{ background: '#f8fafc', padding: '6px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>👁️ Eye Centroid</span>
-                        <strong style={{ fontSize: '0.76rem', color: '#0284c7', display: 'block' }}>
-                          {current15DayHorizon.eye_coordinates?.lat}°N, {current15DayHorizon.eye_coordinates?.lon}°E
+                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>
+                          {seasonal?.is_cyclone_active ? '👁️ Eye Centroid' : '🌊 Vortex Status'}
+                        </span>
+                        <strong style={{ fontSize: '0.76rem', color: seasonal?.is_cyclone_active ? '#0284c7' : '#059669', display: 'block' }}>
+                          {seasonal?.is_cyclone_active && current15DayHorizon.eye_coordinates?.lat != null
+                            ? `${current15DayHorizon.eye_coordinates.lat}°N, ${current15DayHorizon.eye_coordinates.lon}°E`
+                            : 'No Active Vortex'}
                         </strong>
                       </div>
                       <div style={{ background: '#f8fafc', padding: '6px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>🎯 Cone Uncertainty</span>
-                        <strong style={{ fontSize: '0.76rem', color: '#7c3aed', display: 'block' }}>
-                          ±{current15DayHorizon.cone_uncertainty_km} km
+                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>
+                          {seasonal?.is_cyclone_active ? '🎯 Cone Uncertainty' : '🛡️ Cone Domain'}
+                        </span>
+                        <strong style={{ fontSize: '0.76rem', color: seasonal?.is_cyclone_active ? '#7c3aed' : '#059669', display: 'block' }}>
+                          {seasonal?.is_cyclone_active && (current15DayHorizon.cone_uncertainty_km || 0) > 0
+                            ? `±${current15DayHorizon.cone_uncertainty_km} km`
+                            : 'Clear (0 km)'}
                         </strong>
                       </div>
                       <div style={{ background: '#f8fafc', padding: '6px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>⚡ Peak Core Wind</span>
-                        <strong style={{ fontSize: '0.76rem', color: '#dc2626', display: 'block' }}>
+                        <span style={{ fontSize: '0.60rem', color: '#64748b', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>
+                          {seasonal?.is_cyclone_active ? '⚡ Peak Core Wind' : '💨 Ambient Wind'}
+                        </span>
+                        <strong style={{ fontSize: '0.76rem', color: seasonal?.is_cyclone_active ? '#dc2626' : '#0f172a', display: 'block' }}>
                           {current15DayHorizon.projected_peak_wind_kmh} km/h
                         </strong>
                       </div>
@@ -2873,8 +2893,10 @@ export default function ForecastView({ telemetryMode = 'simulated', onToggleTele
                           </div>
                           <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
                             <span style={{ fontWeight: '600' }}>Cone Radius:</span>
-                            <strong style={{ display: 'block', color: '#7c3aed', fontSize: '0.80rem' }}>
-                              ±{current15DayHorizon.cone_uncertainty_km} km
+                            <strong style={{ display: 'block', color: seasonal?.is_cyclone_active ? '#7c3aed' : '#059669', fontSize: '0.80rem' }}>
+                              {seasonal?.is_cyclone_active && (current15DayHorizon.cone_uncertainty_km || 0) > 0
+                                ? `±${current15DayHorizon.cone_uncertainty_km} km`
+                                : 'None (Calm Sea)'}
                             </strong>
                           </div>
                         </div>
